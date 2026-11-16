@@ -74,6 +74,11 @@
     .toggle:has(input:checked) { background: var(--ink); color: #fff; }
     body:not(.show-texts) .tweet .text,
     body:not(.show-texts) .tweet .metrics { display: none; }
+    .kind { display: inline-block; margin: 6px 0 0; padding: 1px 8px; border: 1px solid var(--line); border-radius: 999px; background: #f5f5f4; font-size: 12px; font-weight: 700; letter-spacing: 0.01em; }
+    .kind.quote { background: #f0fdf4; border-color: #bbf7d0; color: var(--embed); }
+    .kind.reply { background: #eff6ff; border-color: #bfdbfe; color: var(--citer); }
+    .kind.retweet { background: #fafaf9; }
+    .kind a { color: inherit; }
     details.method { margin-top: 12px; }
     details.method summary, #volumes > summary { cursor: pointer; font-weight: 650; }
     #volumes { margin: 8px 0 22px; }
@@ -656,7 +661,7 @@
           <div class="arr direct" aria-hidden="true"><i></i><b>adresse du statut</b></div>
           <div class="col embed">
             <h3><span>3</span> Statut cité</h3>
-            <div class="count-only"><strong>6 jan</strong><span>Le texte de ce statut n’est pas reproduit ici.</span><a href="https://x.com/BRICSinfo/status/1876127350594957707" target="_blank" rel="noopener">Ouvrir le statut du 6 janvier</a></div>
+            <div class="count-only"><strong>6 jan</strong><span>Publication originale. Le texte n’est pas reproduit ici.</span><a href="https://x.com/BRICSinfo/status/1876127350594957707" target="_blank" rel="noopener">Ouvrir le statut du 6 janvier</a></div>
           </div>
         </div>
         <p class="relay-foot"><button type="button" class="textbtn" data-select="gap-brics">Voir l’absence de page dans le réseau</button></p>
@@ -706,6 +711,22 @@
   <script>
     const DATA = JSON.parse(document.getElementById("boot").textContent);
     const GEO = { w: [250, 220, 270], gutter: 52, pad: 16 };
+    const PUBTYPE = {
+      "1875272624839987510": { type: "quote", of: "1875271122398376216" },
+      "1875288103243673992": { type: "quote", of: "1875271122398376216" },
+      "1875410960288247979": { type: "quote", of: "1875271122398376216" },
+      "1875498530535882775": { type: "reply", to: "YvesPDB" },
+      "1877771240443621817": { type: "retweet", of: "1877719993388765205" }
+    };
+    const NODE_PUB = {
+      "c-fi": "Publication originale.", "c-nw": "Publication originale.", "c-fr": "Publication originale.",
+      "c-sch": "Réponse à @YvesPDB.", "c-lets": "Publication originale.", "c-fc": "Publication originale.",
+      "c-af": "Publication originale.", "c-four": "Publication originale.", "c-bm": "Publication originale.",
+      "c-ola": "Republication de @Bournemouthecho.", "c-arz": "Publication originale.",
+      "s-c1": "Publication originale.", "s-c3": "Publication originale.", "s-nab": "Publication originale.",
+      "s-un": "Publication originale.", "s-who": "Publication originale.", "s-wire": "Publication originale.",
+      "s-br": "Publication originale.", "s-br6": "Publication originale."
+    };
     const FACES = {
       "c-fi": "franceinfo", "c-nw": "Newsweek", "c-fr": "FranceRsistanc1", "c-sch": "SchmerChris",
       "c-lets": "Lets_Fact", "c-fc": "FactCrescendo", "c-af": "AfricasNow24", "c-four": "FourageBernard",
@@ -773,6 +794,31 @@
       };
     }
 
+    function pubTypeEl(t) {
+      const p = document.createElement("p");
+      p.className = "kind " + (t.pubType || "original");
+      const linkTo = (href, label) => {
+        const a = document.createElement("a");
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = label;
+        return a;
+      };
+      if (t.pubType === "quote") {
+        const target = DATA.tweets[t.pubOf];
+        p.append(document.createTextNode("Citation de "), linkTo(target ? target.status : ("https://x.com/i/status/" + t.pubOf), target ? ("@" + target.handle) : "ce statut"));
+      } else if (t.pubType === "reply") {
+        p.append(document.createTextNode("Réponse à "), linkTo("https://x.com/" + t.pubTo, "@" + t.pubTo));
+      } else if (t.pubType === "retweet") {
+        const target = DATA.tweets[t.pubOf];
+        p.append(document.createTextNode("Republication de "), linkTo(target ? target.status : ("https://x.com/i/status/" + t.pubOf), target ? ("@" + target.handle) : "ce statut"));
+      } else {
+        p.textContent = "Originale";
+      }
+      return p;
+    }
+
     function tweetEl(t, badge, compact) {
       const art = document.createElement("article");
       art.className = "tweet" + (compact ? " compact" : "");
@@ -833,7 +879,7 @@
       const text = document.createElement("p");
       text.className = "text";
       text.innerHTML = linkify(t);
-      body.append(head, text);
+      body.append(head, pubTypeEl(t), text);
       if (t.metrics) {
         const m = document.createElement("p");
         m.className = "metrics";
@@ -924,7 +970,10 @@
         st.textContent = "@COVID19_disease";
         const when = document.createElement("span");
         when.textContent = "1er janvier 2025";
-        status.append(st, document.createElement("br"), when);
+        const kind = document.createElement("p");
+        kind.className = "kind original";
+        kind.textContent = "Originale";
+        status.append(st, document.createElement("br"), when, kind);
         const extra = document.createElement("p");
         extra.className = "extra";
         if (detail) {
@@ -973,40 +1022,40 @@
         return t ? (t.handle + " " + t.name) : "";
       }).join(" ");
 
-      addN({ id: "c-fi", col: 0, kind: "citer", anchor: "site-fi", band: 0, title: "@franceinfo", sub: "son article · 8 jan 2025", goto: "rel-franceinfo",
+      addN({ id: "c-fi", col: 0, kind: "citer", anchor: "site-fi", band: 0, title: "@franceinfo", sub: "originale · 8 jan 2025", goto: "rel-franceinfo",
         blurb: "franceinfo.fr relie le tweet de @franceinfo (8 janvier 2025) au statut de @COVID19_disease (1er janvier). Le compte cite son propre article. L’article cite le statut dans son corps. Le lien court du tweet est l.francetvinfo.fr/Fgh.",
         search: "franceinfo" });
-      addN({ id: "c-nw", col: 0, kind: "citer", anchor: "site-nw", band: 0, title: "@Newsweek", sub: "son article · 3 jan 2025", goto: "rel-newsweek",
+      addN({ id: "c-nw", col: 0, kind: "citer", anchor: "site-nw", band: 0, title: "@Newsweek", sub: "originale · 3 jan 2025", goto: "rel-newsweek",
         blurb: "Le tweet de @Newsweek cite newsweek.com. La page embarque le statut du 1er janvier de @COVID19_disease.",
         search: "Newsweek" });
       addN({ id: "c-34", col: 0, kind: "citer", anchor: "site-nw", band: 1, title: "34 autres publications", sub: "corpus anglais · originales", goto: "rel-newsweek",
         blurb: "34 autres publications originales du corpus anglais citent la même page de Newsweek. Avec le tweet de @Newsweek, 35 publications originales. 102 publications en comptant les retweets.",
         search: handles });
-      addN({ id: "c-fr", col: 0, kind: "citer", anchor: "site-tr", band: 0, title: "@FranceRsistanc1", sub: "autre compte · 4 jan 2025", goto: "rel-tr",
+      addN({ id: "c-fr", col: 0, kind: "citer", anchor: "site-tr", band: 0, title: "@FranceRsistanc1", sub: "originale · 4 jan 2025", goto: "rel-tr",
         blurb: "@FranceRsistanc1 cite la traduction Google de l’article de Newsweek, pas newsweek.com. La page reprend le même statut.",
         search: "FranceRsistanc1 France Résistance" });
-      addN({ id: "c-sch", col: 0, kind: "citer", anchor: "site-tr", band: 1, title: "@SchmerChris", sub: "autre compte · 4 jan 2025", goto: "rel-tr",
+      addN({ id: "c-sch", col: 0, kind: "citer", anchor: "site-tr", band: 1, title: "@SchmerChris", sub: "réponse · 4 jan 2025", goto: "rel-tr",
         blurb: "@SchmerChris cite la même adresse traduite. La page reprend le statut du 1er janvier de @COVID19_disease.",
         search: "SchmerChris Chris Schmer" });
-      addN({ id: "c-lets", col: 0, kind: "citer", anchor: "site-fact", band: 0, title: "@Lets_Fact", sub: "autre compte · 3 jan 2025", goto: "rel-fact",
+      addN({ id: "c-lets", col: 0, kind: "citer", anchor: "site-fact", band: 0, title: "@Lets_Fact", sub: "originale · 3 jan 2025", goto: "rel-fact",
         blurb: "@Lets_Fact cite english.factcrescendo.com. La page reprend @COVID19_disease et @nabilajamal_.",
         search: "Lets_Fact Rahul Namboodri" });
-      addN({ id: "c-fc", col: 0, kind: "citer", anchor: "site-fact", band: 1, title: "@FactCrescendo", sub: "compte du média · 4 jan", goto: "rel-fact",
+      addN({ id: "c-fc", col: 0, kind: "citer", anchor: "site-fact", band: 1, title: "@FactCrescendo", sub: "originale · 4 jan", goto: "rel-fact",
         blurb: "@FactCrescendo cite son article, qui reprend deux statuts du corpus.",
         search: "FactCrescendo" });
-      addN({ id: "c-af", col: 0, kind: "citer", anchor: "site-af", band: 0, title: "@AfricasNow24", sub: "son article · 5 jan 2025", goto: "rel-africa",
+      addN({ id: "c-af", col: 0, kind: "citer", anchor: "site-af", band: 0, title: "@AfricasNow24", sub: "originale · 5 jan 2025", goto: "rel-africa",
         blurb: "@AfricasNow24 cite africasnow.com. La page reprend deux statuts de @COVID19_disease, le 1er et le 3 janvier.",
         search: "AfricasNow24 AfricasNow" });
-      addN({ id: "c-four", col: 0, kind: "citer", anchor: "site-20", band: 0, title: "@FourageBernard", sub: "corpus français · 14 jan", goto: "onu",
+      addN({ id: "c-four", col: 0, kind: "citer", anchor: "site-20", band: 0, title: "@FourageBernard", sub: "originale · 14 jan", goto: "onu",
         blurb: "@FourageBernard, publication du corpus français, cite 20minutes.fr. L’article embarque @UNGeneva.",
         search: "FourageBernard 20 minutes" });
-      addN({ id: "c-bm", col: 0, kind: "citer", anchor: "site-echo", band: 0, title: "@Bournemouthecho", sub: "son article · 10 jan 2025", goto: "rel-echo",
+      addN({ id: "c-bm", col: 0, kind: "citer", anchor: "site-echo", band: 0, title: "@Bournemouthecho", sub: "originale · 10 jan 2025", goto: "rel-echo",
         blurb: "@Bournemouthecho cite ift.tt/BFjCMDJ, qui ouvre l’article. L’article reprend @UNGeneva et @WHO.",
         search: "Bournemouthecho Bournemouth" });
       addN({ id: "c-ola", col: 0, kind: "citer", anchor: "site-echo", band: 1, title: "@OlaAhmedDayo", sub: "republication · 10 jan", goto: "rel-echo",
         blurb: "Republication du tweet de @Bournemouthecho. Le lien ouvre le même article.",
         search: "OlaAhmedDayo" });
-      addN({ id: "c-arz", col: 0, kind: "citer", anchor: "site-rtbf", band: 0, title: "@arztdiego", sub: "autre compte · 7 jan 2025", goto: "rtbf",
+      addN({ id: "c-arz", col: 0, kind: "citer", anchor: "site-rtbf", band: 0, title: "@arztdiego", sub: "originale · 7 jan 2025", goto: "rtbf",
         blurb: "@arztdiego cite rtbf.be. L’article embarque @thewire_in. Les deux datent du 7 janvier.",
         search: "arztdiego RTBF thewire" });
       addN({ id: "c-q", col: 0, kind: "citer", anchor: "site-q", band: 0, title: "17 publications", sub: "corpus français · originales", goto: "qactus",
@@ -1077,28 +1126,28 @@
         blurb: "Pas de site relais. 41 publications originales citent l’adresse du statut du 1er janvier, en plus des 22 pages qui l’intègrent. La lecture ajoute : aucune publication ne cite les deux adresses.",
         search: "COVID19_disease 41" });
 
-      addN({ id: "s-c1", col: 2, kind: "status", band: 0, title: "@COVID19_disease", sub: "1er jan 2025 · 22 pages", goto: "covid",
+      addN({ id: "s-c1", col: 2, kind: "status", band: 0, title: "@COVID19_disease", sub: "originale · 22 pages", goto: "covid",
         blurb: "Statut du 1er janvier 2025. Il est repris par 22 pages, dont franceinfo, Newsweek, la traduction, Fact Crescendo, AfricasNow et 17 autres. Il est aussi cité sans page par 41 publications originales.",
         search: "COVID19_disease 1874481684122607783" });
-      addN({ id: "s-c3", col: 2, kind: "status", band: 1, title: "@COVID19_disease", sub: "3 jan 2025 · second statut", goto: "rel-africa",
+      addN({ id: "s-c3", col: 2, kind: "status", band: 1, title: "@COVID19_disease", sub: "originale · 3 jan 2025", goto: "rel-africa",
         blurb: "Second statut de @COVID19_disease, du 3 janvier, repris par africasnow.com avec celui du 1er janvier.",
         search: "COVID19_disease 1875222668980723816" });
-      addN({ id: "s-nab", col: 2, kind: "status", band: 2, title: "@nabilajamal_", sub: "3 jan 2025", goto: "rel-fact",
+      addN({ id: "s-nab", col: 2, kind: "status", band: 2, title: "@nabilajamal_", sub: "originale · 3 jan 2025", goto: "rel-fact",
         blurb: "Statut de @nabilajamal_ du 3 janvier, repris par english.factcrescendo.com avec le statut du 1er janvier.",
         search: "nabilajamal" });
-      addN({ id: "s-un", col: 2, kind: "status", band: 3, title: "@UNGeneva", sub: "7 jan 2025, 15:00", goto: "onu",
+      addN({ id: "s-un", col: 2, kind: "status", band: 3, title: "@UNGeneva", sub: "originale · 7 jan 2025", goto: "onu",
         blurb: "Statut de @UNGeneva du 7 janvier. Il est repris par 20minutes.fr, par le Bournemouth Echo, et par les 25 autres éditions qui recopient la paire avec @WHO.",
         search: "UNGeneva" });
-      addN({ id: "s-who", col: 2, kind: "status", band: 4, title: "@WHO", sub: "7 jan 2025, 19:39", goto: "rel-echo",
+      addN({ id: "s-who", col: 2, kind: "status", band: 4, title: "@WHO", sub: "originale · 7 jan 2025", goto: "rel-echo",
         blurb: "Statut de @WHO du 7 janvier. Il est repris avec @UNGeneva par le Bournemouth Echo et par 25 autres éditions.",
         search: "WHO OMS" });
-      addN({ id: "s-wire", col: 2, kind: "status", band: 5, title: "@thewire_in", sub: "7 jan 2025, 06:30", goto: "rtbf",
+      addN({ id: "s-wire", col: 2, kind: "status", band: 5, title: "@thewire_in", sub: "originale · 7 jan 2025", goto: "rtbf",
         blurb: "Statut de @thewire_in du 7 janvier, embarqué par rtbf.be. Ce statut cite un article de thewire.in.",
         search: "thewire_in The Wire" });
-      addN({ id: "s-br", col: 2, kind: "status", band: 6, title: "@BRICSinfo", sub: "3 jan 2025 · 49 citations", goto: "direct",
+      addN({ id: "s-br", col: 2, kind: "status", band: 6, title: "@BRICSinfo", sub: "originale · 49 citations", goto: "direct",
         blurb: "Statut du 3 janvier. 49 publications originales le citent par son adresse. Aucune des 145 pages externes lues ne l’embarque.",
         search: "BRICSinfo 1875271122398376216" });
-      addN({ id: "s-br6", col: 2, kind: "status", band: 7, title: "@BRICSinfo", sub: "6 jan 2025 · 11 citations", goto: "direct",
+      addN({ id: "s-br6", col: 2, kind: "status", band: 7, title: "@BRICSinfo", sub: "originale · 11 citations", goto: "direct",
         blurb: "Second statut de @BRICSinfo, du 6 janvier, cité par son adresse par 11 publications originales.",
         search: "BRICSinfo 1876127350594957707" });
       addN({ id: "s-hors", col: 2, kind: "hors", band: 8, title: "Hors corpus", sub: "statuts lus, non inclus", goto: "qactus",
@@ -1386,7 +1435,7 @@
       }
       const role = { citer: "Publication qui cite", site: "Site relais", status: "Publication reprise", gap: "Pas de site relais", hors: "Hors corpus" }[n.kind] || "Passage";
       kicker.textContent = role;
-      text.textContent = n.blurb;
+      text.textContent = NODE_PUB[n.id] ? (NODE_PUB[n.id] + " " + n.blurb) : n.blurb;
       state.goto = n.goto || "";
       wrap.hidden = !state.goto;
     }
@@ -1522,6 +1571,13 @@
     }
     textToggle.addEventListener("change", () => setTexts(textToggle.checked));
     try { if (localStorage.getItem("hmpv-texts") === "1") setTexts(true); } catch (err) { /* pas de mémoire */ }
+
+    Object.entries(DATA.tweets).forEach(([id, t]) => {
+      const extra = PUBTYPE[id] || { type: "original" };
+      t.pubType = extra.type;
+      t.pubOf = extra.of || "";
+      t.pubTo = extra.to || "";
+    });
 
     hydrate();
     aliasBars();
