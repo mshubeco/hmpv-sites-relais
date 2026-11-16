@@ -50,6 +50,7 @@
     .grammar { margin: 22px 0 8px; }
     .grammar h2, .figure-block h2, #volumes h2, .group-lead h2 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
     .flow { display: grid; grid-template-columns: minmax(0, 1.05fr) 92px minmax(0, 0.9fr) 92px minmax(0, 1.05fr); gap: 8px; align-items: start; margin-top: 12px; }
+    .flow.direct-pair { grid-template-columns: minmax(0, 1fr) 140px minmax(0, 1fr); }
     .demo { border-radius: 12px; padding: 14px; font-weight: 650; display: flex; align-items: center; background: #fff; min-height: 74px; }
     .demo small { display: block; font-weight: 500; color: var(--muted); margin-top: 4px; }
     .demo.cite { border: 1px solid #d6d3d1; border-top: 4px solid var(--citer); }
@@ -198,7 +199,7 @@
     @media (max-width: 900px) {
       .facts { grid-template-columns: 1fr 1fr; }
       h1 { font-size: 26px; }
-      .flow, .mini { grid-template-columns: 1fr; }
+      .flow, .flow.direct-pair, .mini { grid-template-columns: 1fr; }
       .arr { flex-direction: row; justify-content: flex-start; padding: 2px 0 2px 8px; }
       .arr i { width: 2px; height: 28px; }
       .arr i::after { right: auto; left: -4px; top: auto; bottom: 0; border-width: 7px 5px 0 5px; border-color: currentColor transparent transparent transparent; }
@@ -298,17 +299,17 @@
       <p class="note">Chaque barre est l’effectif de cette adresse. Elles ne se cumulent pas. Le plus grand effectif indiqué est 49.</p>
       <div class="bar-group">
         <h3>Sans page entre les deux</h3>
-        <div class="bar" data-kind="direct" data-tags="direct" data-n="49" data-select="gap-brics" data-nodes="c-b49 gap-brics s-br" role="button" tabindex="0">
+        <div class="bar" data-kind="direct" data-tags="direct" data-n="49" data-select="c-b49" data-nodes="c-b49 s-br" role="button" tabindex="0">
           <span class="bar-label"><span class="bar-name">@BRICSinfo · 3 janvier</span><span class="bar-sub">publications originales · l’adresse citée est le statut</span></span>
           <span class="bar-track" aria-hidden="true"><span></span></span>
           <strong class="bar-val">49</strong>
         </div>
-        <div class="bar" data-kind="direct" data-tags="direct" data-n="41" data-select="gap-covid" data-nodes="c-c41 gap-covid s-c1" role="button" tabindex="0">
+        <div class="bar" data-kind="direct" data-tags="direct" data-n="41" data-select="c-c41" data-nodes="c-c41 s-c1" role="button" tabindex="0">
           <span class="bar-label"><span class="bar-name">@COVID19_disease · 1<sup>er</sup> janvier</span><span class="bar-sub">publications originales · en plus des 22 pages</span></span>
           <span class="bar-track" aria-hidden="true"><span></span></span>
           <strong class="bar-val">41</strong>
         </div>
-        <div class="bar" data-kind="direct" data-tags="direct" data-n="11" data-select="gap-brics6" data-nodes="c-b11 gap-brics6 s-br6" role="button" tabindex="0">
+        <div class="bar" data-kind="direct" data-tags="direct" data-n="11" data-select="c-b11" data-nodes="c-b11 s-br6" role="button" tabindex="0">
           <span class="bar-label"><span class="bar-name">@BRICSinfo · 6 janvier</span><span class="bar-sub">publications originales · second statut, même forme</span></span>
           <span class="bar-track" aria-hidden="true"><span></span></span>
           <strong class="bar-val">11</strong>
@@ -612,16 +613,11 @@
         </article>
       </section>
 
-      <article class="relay" id="direct" data-tags="direct" data-nodes="c-b49 gap-brics s-br c-b11 gap-brics6 s-br6 c-c41 gap-covid s-c1">
+      <article class="relay" id="direct" data-tags="direct" data-nodes="c-b49 s-br c-b11 s-br6 c-c41 s-c1">
         <p class="relay-kicker">Pas de site entre les deux</p>
         <h2>Le lien cité est le statut lui-même</h2>
-        <ul class="plain">
-          <li>49 publications originales citent @BRICSinfo, 3 janvier.</li>
-          <li>11 publications originales citent @BRICSinfo, 6 janvier.</li>
-          <li>41 publications originales citent @COVID19_disease, 1<sup>er</sup> janvier, sans page.</li>
-          <li>Aucune publication ne cite les deux adresses.</li>
-        </ul>
-        <div class="flow">
+        <p class="count-line">Aucune publication ne cite les deux adresses.</p>
+        <div class="flow direct-pair">
           <div class="col cite">
             <h3><span>1</span> Citent le statut</h3>
             <div class="stack">
@@ -630,41 +626,35 @@
               <div data-tweet="1875272624839987510" data-badge="Exemple, sur 49"></div>
             </div>
           </div>
-          <div class="arr direct" aria-hidden="true"><i></i><b>sans page</b></div>
-          <div class="col mid">
-            <h3><span>2</span> Pas de site relais</h3>
-            <div class="site gap">
-              <p class="domain">Pas de page extérieure</p>
-              <h3>Le lien ouvre le statut sur X</h3>
-              <p class="source-note">Rien n’est lu entre les deux publications. Ce n’est pas un site relais.</p>
-            </div>
-          </div>
-          <div class="arr direct" aria-hidden="true"><i></i><b>adresse du statut</b></div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>cite le statut</b></div>
           <div class="col embed">
-            <h3><span>3</span> Statut cité</h3>
+            <h3><span>2</span> Statut cité</h3>
             <div data-tweet="1875271122398376216" data-badge="Cité par son adresse"></div>
           </div>
         </div>
-        <div class="flow">
+        <div class="flow direct-pair">
           <div class="col cite">
-            <h3><span>1</span> Second statut</h3>
+            <h3><span>1</span> Citent le statut</h3>
             <div class="count-only"><strong>11</strong><span>publications originales citent le statut du 6 janvier. Leurs textes ne sont pas ouverts sur cette page.</span></div>
           </div>
-          <div class="arr direct" aria-hidden="true"><i></i><b>sans page</b></div>
-          <div class="col mid">
-            <h3><span>2</span> Pas de site relais</h3>
-            <div class="site gap">
-              <p class="domain">Pas de page extérieure</p>
-              <h3>Même forme que le 3 janvier</h3>
-            </div>
-          </div>
-          <div class="arr direct" aria-hidden="true"><i></i><b>adresse du statut</b></div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>cite le statut</b></div>
           <div class="col embed">
-            <h3><span>3</span> Statut cité</h3>
+            <h3><span>2</span> Statut cité</h3>
             <div class="count-only"><strong>6 jan</strong><span>Publication originale. Le texte n’est pas reproduit ici.</span><a href="https://x.com/BRICSinfo/status/1876127350594957707" target="_blank" rel="noopener">Ouvrir le statut du 6 janvier</a></div>
           </div>
         </div>
-        <p class="relay-foot"><button type="button" class="textbtn" data-select="gap-brics">Voir l’absence de page dans le réseau</button></p>
+        <div class="flow direct-pair">
+          <div class="col cite">
+            <h3><span>1</span> Citent le statut</h3>
+            <div class="count-only"><strong>41</strong><span>publications originales citent le statut du 1<sup>er</sup> janvier, sans page. Leurs textes ne sont pas ouverts ici.</span></div>
+          </div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>cite le statut</b></div>
+          <div class="col embed">
+            <h3><span>2</span> Statut cité</h3>
+            <div data-tweet="1874481684122607783" data-badge="Cité par son adresse"></div>
+          </div>
+        </div>
+        <p class="relay-foot"><button type="button" class="textbtn" data-select="c-b49">Voir ce lien dans le réseau</button></p>
       </article>
 
       <article class="relay" id="qactus" data-tags="hors" data-nodes="c-q site-q s-hors">
@@ -1061,13 +1051,13 @@
       addN({ id: "c-q", col: 0, kind: "citer", anchor: "site-q", band: 0, title: "17 publications", sub: "corpus français · originales", goto: "qactus",
         blurb: "17 publications originales du corpus français citent qactus.fr. La page ne reprend aucun statut des deux corpus.",
         search: "qactus" });
-      addN({ id: "c-b49", col: 0, kind: "citer", anchor: "gap-brics", band: 0, title: "49 publications", sub: "originales · 3 jan 2025", goto: "direct",
+      addN({ id: "c-b49", col: 0, kind: "citer", anchor: "s-br", band: 0, title: "49 publications", sub: "originales · 3 jan 2025", goto: "direct",
         blurb: "49 publications originales citent l’adresse du statut de @BRICSinfo du 3 janvier. Aucune des 145 pages lues ne l’embarque.",
         search: "BRICSinfo Alice_comfy dbsmorocco johnson_aaronr" });
-      addN({ id: "c-b11", col: 0, kind: "citer", anchor: "gap-brics6", band: 0, title: "11 publications", sub: "originales · 6 jan 2025", goto: "direct",
+      addN({ id: "c-b11", col: 0, kind: "citer", anchor: "s-br6", band: 0, title: "11 publications", sub: "originales · 6 jan 2025", goto: "direct",
         blurb: "11 publications originales citent le statut de @BRICSinfo du 6 janvier, par son adresse, sans page entre les deux.",
         search: "BRICSinfo 1876127350594957707" });
-      addN({ id: "c-c41", col: 0, kind: "citer", anchor: "gap-covid", band: 0, title: "41 publications", sub: "originales · adresse du statut", goto: "direct",
+      addN({ id: "c-c41", col: 0, kind: "citer", anchor: "s-c1", band: 0, title: "41 publications", sub: "originales · adresse du statut", goto: "direct",
         blurb: "41 publications originales citent l’adresse du statut du 1er janvier de @COVID19_disease, en plus des 22 pages qui l’intègrent.",
         search: "COVID19_disease direct" });
 
@@ -1116,16 +1106,6 @@
       addN({ id: "site-q", col: 1, kind: "site", band: 10, title: "qactus.fr", sub: "hors corpus", goto: "qactus", count: 17,
         blurb: "qactus.fr est cité par 17 publications originales du corpus français. Les deux statuts lus sur la page ne sont dans aucun des deux corpus. La page ne fait pas revenir vers une publication du corpus.",
         search: "qactus" });
-      addN({ id: "gap-brics", col: 1, kind: "gap", band: 11, title: "Pas de page", sub: "le lien est le statut", goto: "direct",
-        blurb: "Pas de site relais. 49 publications originales citent l’adresse du statut de @BRICSinfo du 3 janvier. @BRICSinfo n’est repris dans aucune des 145 pages externes lues.",
-        search: "BRICSinfo" });
-      addN({ id: "gap-brics6", col: 1, kind: "gap", band: 12, title: "Pas de page", sub: "second statut · 6 jan", goto: "direct",
-        blurb: "Pas de site relais. 11 publications originales citent le statut de @BRICSinfo du 6 janvier par son adresse.",
-        search: "BRICSinfo 6 janvier" });
-      addN({ id: "gap-covid", col: 1, kind: "gap", band: 2.5, title: "Pas de page", sub: "41 publications · 1er jan", goto: "direct",
-        blurb: "Pas de site relais. 41 publications originales citent l’adresse du statut du 1er janvier, en plus des 22 pages qui l’intègrent. La lecture ajoute : aucune publication ne cite les deux adresses.",
-        search: "COVID19_disease 41" });
-
       addN({ id: "s-c1", col: 2, kind: "status", band: 0, title: "@COVID19_disease", sub: "originale · 22 pages", goto: "covid",
         blurb: "Statut du 1er janvier 2025. Il est repris par 22 pages, dont franceinfo, Newsweek, la traduction, Fact Crescendo, AfricasNow et 17 autres. Il est aussi cité sans page par 41 publications originales.",
         search: "COVID19_disease 1874481684122607783" });
@@ -1183,12 +1163,9 @@
       E("site-rtbf", "s-wire", "embed", "reprend le statut", ["simple"], 1);
       E("c-q", "site-q", "cite", "cite l’adresse", ["hors"], 17);
       E("site-q", "s-hors", "hors", "ne reprend pas de statut du corpus", ["hors"], 17);
-      E("c-b49", "gap-brics", "direct", "cite l’adresse du statut", ["direct"], 49);
-      E("gap-brics", "s-br", "direct", "sans page", ["direct"], 49);
-      E("c-b11", "gap-brics6", "direct", "cite l’adresse du statut", ["direct"], 11);
-      E("gap-brics6", "s-br6", "direct", "sans page", ["direct"], 11);
-      E("c-c41", "gap-covid", "direct", "cite l’adresse du statut", ["direct"], 41);
-      E("gap-covid", "s-c1", "direct", "sans page", ["direct"], 41);
+      E("c-b49", "s-br", "direct", "cite le statut", ["direct"], 49);
+      E("c-b11", "s-br6", "direct", "cite le statut", ["direct"], 11);
+      E("c-c41", "s-c1", "direct", "cite le statut", ["direct"], 41);
       return { nodes, edges };
     }
 
@@ -1239,8 +1216,11 @@
 
     function layout(nodes, edges) {
       const pitch = 58;
+      const lane = edges.some((e) => e.kind === "direct" && edges.some((f) => f.to === e.to && f.kind !== "direct" && f.from !== e.from));
+      nodes.forEach((n) => { n.y = null; });
+      const y0 = lane ? 36 : 8;
       const sites = nodes.filter((n) => n.col === 1).sort((a, b) => a.band - b.band);
-      let y = 8;
+      let y = y0;
       sites.forEach((site) => {
         const citers = nodes.filter((n) => n.col === 0 && n.anchor === site.id).sort((a, b) => a.band - b.band);
         const slots = Math.max(1, citers.length);
@@ -1251,14 +1231,38 @@
       });
       const rights = nodes.filter((n) => n.col === 2);
       rights.forEach((n) => {
-        let anchors = edges.filter((e) => e.to === n.id && e.kind !== "direct").map((e) => nodes.find((s) => s.id === e.from)).filter(Boolean);
-        if (!anchors.length) anchors = edges.filter((e) => e.to === n.id).map((e) => nodes.find((s) => s.id === e.from)).filter(Boolean);
-        n.ideal = anchors.length ? anchors.reduce((s, a) => s + a.y + a.h / 2, 0) / anchors.length - 24 : 8;
+        const anchors = edges.filter((e) => e.to === n.id && e.kind !== "direct").map((e) => nodes.find((s) => s.id === e.from)).filter((s) => s && s.y != null);
+        n.ideal = anchors.length ? anchors.reduce((s, a) => s + a.y + a.h / 2, 0) / anchors.length - 24 : 1e9;
       });
       rights.sort((a, b) => a.ideal - b.ideal || a.band - b.band);
-      let ry = 8;
-      rights.forEach((n) => { n.h = 48; n.y = Math.max(n.ideal, ry); ry = n.y + pitch; });
-      const H = Math.max(y, ry, 80) + 8;
+      let ry = y0;
+      rights.forEach((n) => {
+        n.h = 48;
+        n.y = n.ideal > 1e8 ? Math.max(y, ry) : Math.max(n.ideal, ry);
+        ry = n.y + pitch;
+      });
+      const occupied = nodes.filter((n) => n.col === 0 && n.y != null).map((n) => [n.y, n.y + 48]);
+      const hits = (yy, h) => occupied.some(([a, b]) => yy < b + 6 && yy + h > a - 6);
+      const groups = new Map();
+      nodes.filter((n) => n.col === 0 && n.y == null).forEach((c) => {
+        if (!groups.has(c.anchor)) groups.set(c.anchor, []);
+        groups.get(c.anchor).push(c);
+      });
+      groups.forEach((citers, anchorId) => {
+        const target = nodes.find((n) => n.id === anchorId);
+        citers.sort((a, b) => a.band - b.band);
+        const block = (citers.length - 1) * pitch + 48;
+        let yy = target ? target.y + 24 - block / 2 : y;
+        let guard = 0;
+        while (hits(yy, block) && guard < 40) { yy += pitch; guard += 1; }
+        citers.forEach((c, i) => {
+          c.h = 48;
+          c.y = yy + i * pitch;
+          occupied.push([c.y, c.y + 48]);
+        });
+      });
+      const bottom = Math.max(y, ry, ...nodes.map((n) => (n.y || 0) + 48), 80) + 8;
+      const H = bottom;
       const xs = [];
       let x = GEO.pad;
       for (let i = 0; i < 3; i += 1) {
@@ -1321,18 +1325,45 @@
       svg.append(defs);
       let keep = null;
       if (state.selected && nodes.some((n) => n.id === state.selected)) keep = neighborhood(new Set([state.selected]), edges);
-      edges.forEach((e) => {
-        const a = nodes.find((n) => n.id === e.from);
-        const b = nodes.find((n) => n.id === e.to);
-        if (!a || !b) return;
+      const sites = nodes.filter((n) => n.col === 1);
+      const edgeD = (a, b) => {
         const x1 = a.x + a.w;
         const y1 = a.y + a.h / 2;
         const x2 = b.x;
         const y2 = b.y + b.h / 2;
         const mx = (x1 + x2) / 2;
+        const curve = "M " + x1 + " " + y1 + " C " + mx + " " + y1 + ", " + mx + " " + y2 + ", " + x2 + " " + y2;
+        if (b.col !== a.col + 2) return curve;
+        const blocked = sites.some((s) => {
+          const left = s.x - 2;
+          const right = s.x + s.w + 2;
+          if (right <= x1 || left >= x2) return false;
+          const span = x2 - x1 || 1;
+          const t1 = Math.max(0, (left - x1) / span);
+          const t2 = Math.min(1, (right - x1) / span);
+          for (let t = t1; t <= t2 + 0.001; t += 0.08) {
+            const u = 1 - t;
+            const yy = u * u * u * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y2;
+            if (yy > s.y - 8 && yy < s.y + s.h + 8) return true;
+          }
+          return false;
+        });
+        if (!blocked) return curve;
+        const lane = 14;
+        const g1 = x1 + 22;
+        const g2 = x2 - 22;
+        return "M " + x1 + " " + y1
+          + " C " + g1 + " " + y1 + ", " + g1 + " " + lane + ", " + (g1 + 36) + " " + lane
+          + " L " + (g2 - 36) + " " + lane
+          + " C " + g2 + " " + lane + ", " + g2 + " " + y2 + ", " + x2 + " " + y2;
+      };
+      edges.forEach((e) => {
+        const a = nodes.find((n) => n.id === e.from);
+        const b = nodes.find((n) => n.id === e.to);
+        if (!a || !b) return;
         const width = 1.35 + Math.min(e.count || 0, 49) / 49 * 3.4;
         const path = svgEl("path", {
-          d: "M " + x1 + " " + y1 + " C " + mx + " " + y1 + ", " + mx + " " + y2 + ", " + x2 + " " + y2,
+          d: edgeD(a, b),
           class: "edge " + e.kind + (keep && !(keep.has(e.from) && keep.has(e.to)) ? " is-dim" : ""),
           "marker-end": "url(#arrow-" + e.kind + ")"
         });
