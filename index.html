@@ -210,6 +210,10 @@
     .clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .extra { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    #fold-probe { position: absolute; left: -9999px; top: 0; visibility: hidden; white-space: pre-wrap; font: 13.5px/1.4 "Segoe UI", system-ui, sans-serif; }
+    .fold { box-sizing: border-box; height: 100%; overflow: auto; color: #1c1917; font: 13.5px/1.4 "Segoe UI", system-ui, sans-serif; }
+    .fold p { margin: 0; white-space: pre-wrap; }
+    .fold a { display: inline-block; margin-top: 6px; font-size: 12.5px; }
     #net-empty { margin: 8px 0 0; }
     footer.page { color: var(--muted); font-size: 14px; padding: 8px 0 48px; }
     footer.page a { overflow-wrap: anywhere; }
@@ -289,7 +293,7 @@
     <section class="figure-block" id="reseau">
       <h2>Réseau des passages</h2>
       <div class="figure-tools">
-        <p class="legend"><b class="cite">Bleu</b> cite l’adresse. <b class="embed">Rouille</b> reprend le statut. <b class="origin">Vert</b> l’adresse à l’origine du statut repris, quand il y en a une. <b class="direct">Tireté</b> pas de page, ou hors corpus. Cliquez un nom.</p>
+        <p class="legend"><b class="cite">Bleu</b> cite l’adresse. <b class="embed">Rouille</b> reprend le statut. <b class="origin">Vert</b> l’adresse à l’origine du statut repris, quand il y en a une. <b class="direct">Tireté</b> pas de page, ou hors corpus. Une publication s’ouvre sur son texte. Un site ouvre son adresse.</p>
         <button type="button" id="expand" aria-expanded="false">Déplier les 17 domaines</button>
         <p id="expand-note" class="note" hidden>Le filtre ouvre les domaines un par un.</p>
       </div>
@@ -301,6 +305,7 @@
             <span>Publication reprise</span>
           </div>
           <svg id="net" role="group" aria-label="Réseau des sites relais"></svg>
+          <div id="fold-probe"></div>
         </div>
       </div>
       <p id="net-empty" hidden>Aucun passage ne correspond à ce filtre.</p>
@@ -764,8 +769,29 @@
       "africasnow.com": { href: "#rel-africa", nodes: "site-af s-c1 s-c3 c-af" }
     };
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const state = { filter: "all", q: "", expand: false, selected: null, goto: "" };
+    const state = { filter: "all", q: "", expand: false, selected: null, open: null, goto: "" };
+    const NODE_TWEET = {
+      "c-fi": "1876889859941392840", "c-nw": "1875156830797824357", "c-fr": "1875485955513336286",
+      "c-sch": "1875498530535882775", "c-lets": "1875248246047851001", "c-fc": "1875432320364425380",
+      "c-af": "1875894349533523991", "c-four": "1879251878426685803", "c-bm": "1877719993388765205",
+      "c-ola": "1877771240443621817", "c-arz": "1876585649458811292",
+      "s-c1": "1874481684122607783", "s-c3": "1875222668980723816", "s-nab": "1875132118021681211",
+      "s-un": "1876645174371078499", "s-who": "1876715280224702652", "s-wire": "1876516618211397674",
+      "s-br": "1875271122398376216"
+    };
+    const SITE_URL = {
+      "site-fi": "https://www.franceinfo.fr/replay-radio/le-vrai-du-faux/cinq-ans-apres-le-covid-19-la-chine-a-t-elle-declare-l-etat-d-urgence-sanitaire-a-cause-d-une-epidemie-de-hmpv_6981089.html",
+      "site-nw": "https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126",
+      "site-tr": "https://www-newsweek-com.translate.goog/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=fr&_x_tr_pto=wapp",
+      "site-fact": "https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms",
+      "site-af": "https://africasnow.com/2025/01/05/hmpv-covid-like-disease-ravaging-china-here-is-what-we-know/",
+      "site-20": "https://www.20minutes.fr/sante/4133486-20250114-non-confinement-lie-virus-hmpv-prevu-france",
+      "site-echo": "https://www.bournemouthecho.co.uk/news/national/uk-today/24847965.hmpv-worried-uk/?ref=rss",
+      "site-rtbf": "https://www.rtbf.be/article/le-virus-hmpv-qui-circule-en-chine-n-est-pas-un-nouveau-virus-mysterieux-11485602",
+      "site-q": "https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/"
+    };
     let laidOut = [];
+    let prevBox = new Map();
     let refocus = false;
 
     function escapeHtml(s) {
@@ -1223,7 +1249,7 @@
         if (DETAIL[p.domain]) return;
         const id = "page-" + i;
         const tagsNote = p.statuses > 1 ? (p.statuses + " statuts dans la page") : "1 statut";
-        addN({ id: id, col: 1, kind: "site", band: 3 + (i + 1) / 100, onlyExpand: true, title: p.domain, sub: p.citers + (p.citers > 1 ? " publications · " : " publication · ") + tagsNote, goto: "row-" + i, count: p.citers,
+        addN({ id: id, col: 1, kind: "site", band: 3 + (i + 1) / 100, onlyExpand: true, href: p.href, title: p.domain, sub: p.citers + (p.citers > 1 ? " publications · " : " publication · ") + tagsNote, goto: "row-" + i, count: p.citers,
           blurb: p.domain + " reprend le statut du 1er janvier de @COVID19_disease. " + p.citers + (p.citers > 1 ? " publications du corpus citent cette page. " : " publication du corpus cite cette page. ") + (p.statuses > 1 ? "La page contient " + p.statuses + " statuts du corpus. Les autres ne sont pas détaillés ici." : "Un seul statut du corpus est indiqué dans la page."),
           search: p.domain + " " + p.title });
         const tags = pageTags(p);
@@ -1319,6 +1345,10 @@
       E("c-b49", "s-br", "direct", "cite le statut", ["direct"], 49);
       E("c-b11", "s-br6", "direct", "cite le statut", ["direct"], 11);
       E("c-c41", "s-c1", "direct", "cite le statut", ["direct"], 41);
+      nodes.forEach((n) => {
+        if (NODE_TWEET[n.id]) n.tweet = NODE_TWEET[n.id];
+        if (SITE_URL[n.id]) n.href = SITE_URL[n.id];
+      });
       return { nodes, edges };
     }
 
@@ -1429,7 +1459,9 @@
         n.y = Math.max(n.y, oy);
         oy = n.y + pitch;
       });
-      const bottom = Math.max(y, ry, oy, ...nodes.map((n) => (n.y || 0) + 48), 80) + 8;
+      const opened = nodes.find((n) => n.id === state.open && n.tweet && DATA.tweets[n.tweet] && DATA.tweets[n.tweet].text);
+      if (opened) opened.h = foldHeight(DATA.tweets[opened.tweet].text, GEO.w[opened.col]);
+      const bottom = Math.max(y, ry, oy, ...nodes.map((n) => (n.y || 0) + (n.h || 48)), 80) + 8;
       const H = bottom;
       const maxCol = nodes.some((n) => n.col === 3) ? 3 : 2;
       const xs = [];
@@ -1441,6 +1473,14 @@
       const W = x + GEO.pad;
       nodes.forEach((n) => { n.x = xs[n.col]; n.w = GEO.w[n.col]; });
       return { W, H, maxCol };
+    }
+
+    function foldHeight(text, width) {
+      const probe = document.getElementById("fold-probe");
+      probe.style.width = (width - 20) + "px";
+      probe.textContent = text;
+      const textH = Math.min(probe.offsetHeight, 132);
+      return 50 + textH + 28;
     }
 
     function paintHeads(width, maxCol) {
@@ -1508,15 +1548,18 @@
         m.append(svgEl("path", { d: "M0 0 L10 5 L0 10 z", fill: fill }));
         defs.append(m);
       });
+      const lift = svgEl("filter", { id: "lift", x: "-20%", y: "-20%", width: "140%", height: "160%" });
+      lift.append(svgEl("feDropShadow", { dx: "0", dy: "8", stdDeviation: "8", "flood-color": "#1c1917", "flood-opacity": "0.14" }));
+      defs.append(lift);
       svg.append(defs);
       let keep = null;
       if (state.selected && nodes.some((n) => n.id === state.selected)) keep = neighborhood(new Set([state.selected]), edges);
       const sites = nodes.filter((n) => n.col === 1);
       const edgeD = (a, b) => {
         const x1 = a.x + a.w;
-        const y1 = a.y + a.h / 2;
+        const y1 = a.y + 24;
         const x2 = b.x;
-        const y2 = b.y + b.h / 2;
+        const y2 = b.y + 24;
         const mx = (x1 + x2) / 2;
         const curve = "M " + x1 + " " + y1 + " C " + mx + " " + y1 + ", " + mx + " " + y2 + ", " + x2 + " " + y2;
         if (b.col !== a.col + 2) return curve;
@@ -1558,13 +1601,21 @@
       });
       nodes.forEach((n) => {
         const g = svgEl("g", { "data-id": n.id, "data-kind": n.kind, tabindex: "0", role: "button" });
-        g.setAttribute("aria-label", n.title + ". " + n.sub + ". " + n.blurb);
+        const tweet = n.tweet && DATA.tweets[n.tweet];
+        const canFold = !!(tweet && tweet.text);
+        const isSiteLink = n.kind === "site" && !!n.href;
+        g.setAttribute("role", isSiteLink ? "link" : "button");
+        g.setAttribute("aria-label", n.title + ". " + n.sub + (canFold ? ". Affiche le texte." : "") + (isSiteLink ? ". Ouvre l’adresse." : "") + " " + n.blurb);
+        if (canFold) g.setAttribute("aria-expanded", n.id === state.open ? "true" : "false");
         if (keep && !keep.has(n.id)) g.classList.add("is-dim");
         if (n.id === state.selected) g.classList.add("is-on");
+        if (n.id === state.open) g.classList.add("is-open");
         const title = svgEl("title");
         title.textContent = n.blurb;
         g.append(title);
-        g.append(svgEl("rect", { class: "node", x: n.x, y: n.y, width: n.w, height: n.h, rx: n.kind === "site" || n.kind === "gap" || n.kind === "origin" ? 6 : 14 }));
+        const rect = svgEl("rect", { class: "node", x: n.x, y: n.y, width: n.w, height: n.h, rx: n.kind === "site" || n.kind === "gap" || n.kind === "origin" ? 6 : 14 });
+        if (n.id === state.open) rect.setAttribute("filter", "url(#lift)");
+        g.append(rect);
         let inset = 12;
         const handle = FACES[n.id];
         if (handle) {
@@ -1606,12 +1657,44 @@
         const t2 = svgEl("text", { class: "ns", x: n.x + inset, y: n.y + 37 });
         t2.textContent = trunc(n.sub, n.w - (inset - 12));
         g.append(t1, t2);
-        g.addEventListener("click", () => select(n.id));
+        if (n.id === state.open && canFold) {
+          const fo = svgEl("foreignObject", { x: n.x + 10, y: n.y + 48, width: n.w - 20, height: n.h - 56 });
+          const fold = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+          fold.setAttribute("class", "fold");
+          const para = document.createElementNS("http://www.w3.org/1999/xhtml", "p");
+          para.textContent = tweet.text;
+          const link = document.createElementNS("http://www.w3.org/1999/xhtml", "a");
+          link.setAttribute("href", tweet.status);
+          link.setAttribute("target", "_blank");
+          link.setAttribute("rel", "noopener");
+          link.textContent = "Ouvrir le statut";
+          fold.append(para, link);
+          fold.addEventListener("click", (ev) => ev.stopPropagation());
+          fo.append(fold);
+          g.append(fo);
+          if (!reduce) {
+            fo.animate(
+              [{ opacity: 0, transform: "translateY(-8px)" }, { opacity: 1, transform: "translateY(0px)" }],
+              { duration: 280, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" }
+            );
+          }
+        }
+        const prev = prevBox.get(n.id);
+        if (prev && !reduce && Math.abs(prev.h - n.h) > 1) {
+          rect.animate(
+            [{ height: prev.h }, { height: n.h }],
+            { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" }
+          );
+        }
+        g.addEventListener("click", () => activate(n));
         g.addEventListener("keydown", (ev) => {
-          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(n.id); }
+          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); activate(n); }
         });
         svg.append(g);
       });
+      const openG = svg.querySelector("g.is-open");
+      if (openG) svg.append(openG);
+      prevBox = new Map(nodes.map((n) => [n.id, { y: n.y, h: n.h }]));
       const ul = document.getElementById("net-list");
       ul.replaceChildren();
       edges.forEach((e) => {
@@ -1701,6 +1784,19 @@
       draw();
     }
 
+    function activate(n) {
+      if (n && n.kind === "site" && n.href) {
+        window.open(n.href, "_blank", "noopener,noreferrer");
+        state.open = null;
+        select(n.id);
+        return;
+      }
+      const tweet = n && n.tweet && DATA.tweets[n.tweet];
+      if (tweet && tweet.text) state.open = state.open === n.id ? null : n.id;
+      else state.open = null;
+      select(n ? n.id : null);
+    }
+
     function select(id, opts) {
       if (id && String(id).startsWith("page-")) state.expand = true;
       state.selected = id;
@@ -1756,7 +1852,10 @@
       select(next.id, { focus: true });
     });
     document.getElementById("net").addEventListener("click", (e) => {
-      if (e.target === document.getElementById("net")) select(null);
+      if (e.target === document.getElementById("net")) {
+        state.open = null;
+        select(null);
+      }
     });
 
     document.querySelectorAll(".bar").forEach((bar) => {
