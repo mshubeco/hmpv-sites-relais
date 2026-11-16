@@ -80,6 +80,12 @@
     .kind.reply { background: #eff6ff; border-color: #bfdbfe; color: var(--citer); }
     .kind.retweet { background: #fafaf9; }
     .kind a { color: inherit; }
+    .engage { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 7px 0 0; min-height: 14px; }
+    .engage .track { width: 56px; flex: none; height: 4px; border-radius: 99px; background: #e7e5e4; }
+    .engage .track i { display: block; height: 4px; border-radius: 99px; background: var(--citer); }
+    .engage .num { color: var(--faint); font-size: 12px; line-height: 1.25; font-variant-numeric: tabular-nums; }
+    .engage.is-notable .num { color: var(--ink); font-weight: 650; }
+    .tweet.compact .engage .track { width: 40px; }
     details.method { margin-top: 12px; }
     details.method summary, #volumes > summary { cursor: pointer; font-weight: 650; }
     #volumes { margin: 8px 0 22px; }
@@ -621,9 +627,9 @@
           <div class="col cite">
             <h3><span>1</span> Citent le statut</h3>
             <div class="stack">
+              <div data-tweet="1875272624839987510" data-badge="Exemple, sur 49"></div>
               <div data-tweet="1875288103243673992" data-badge="Exemple, sur 49"></div>
               <div data-tweet="1875410960288247979" data-badge="Exemple, sur 49"></div>
-              <div data-tweet="1875272624839987510" data-badge="Exemple, sur 49"></div>
             </div>
           </div>
           <div class="arr direct" aria-hidden="true"><i></i><b>cite le statut</b></div>
@@ -692,6 +698,7 @@
       <details class="method">
         <summary>Lecture du 16 novembre 2026</summary>
         <p>7&nbsp;634 pages citées par les deux corpus ont été demandées, après retrait des réseaux sociaux. 203 contenaient un statut. Une fois retirées les adresses qui aboutissent sur X, et une fois les doublons réunis, 145 pages externes contiennent un statut du corpus&nbsp;: 96 en citent un seul, 49 en citent plusieurs. Elles atteignent 90 publications du corpus. Aucune page ne fait que réafficher le tweet qui la partage.</p>
+        <p>Les publications qui citent sont rangées de la plus ancienne à la plus récente. La barre sous chacune reprend les réponses, republications, citations et j’aime de l’export, à l’échelle de ces publications seulement.</p>
         <p>Qactus, <a href="https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/" target="_blank" rel="noopener">https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/</a>, est cité par 17 publications originales du corpus français. Les deux statuts présents sur cette page ne sont dans aucun des deux corpus. NDTV, WION et Reuters ont souvent refusé la lecture automatique.</p>
       </details>
     </footer>
@@ -809,7 +816,86 @@
       return p;
     }
 
-    function tweetEl(t, badge, compact) {
+    function cmpId(a, b) {
+      if (a.length !== b.length) return a.length - b.length;
+      return a < b ? -1 : a > b ? 1 : 0;
+    }
+
+    function parseEngagement(t) {
+      const blank = { rp: 0, rt: 0, qt: 0, lk: 0, n: 0 };
+      if (!t || !t.metrics) return blank;
+      const grab = (re) => {
+        const m = t.metrics.match(re);
+        return m ? (Number(m[1].replace(/[\s\u202f\u00a0]/g, "")) || 0) : 0;
+      };
+      const rp = grab(/(\d[\d\s\u202f\u00a0]*)\s*réponses?/);
+      const rt = grab(/(\d[\d\s\u202f\u00a0]*)\s*republications?/);
+      const qt = grab(/(\d[\d\s\u202f\u00a0]*)\s*citations?/);
+      const lk = grab(/(\d[\d\s\u202f\u00a0]*)\s*j[’']aime/);
+      return { rp, rt, qt, lk, n: rp + rt + qt + lk };
+    }
+
+    function piece(n, one, many) {
+      return n + "\u00a0" + (n > 1 ? many : one);
+    }
+
+    let CITE_MAX = 1;
+
+    function orderCiting() {
+      document.querySelectorAll(".col.cite .stack").forEach((stack) => {
+        const slots = [...stack.querySelectorAll(":scope > [data-tweet]")];
+        if (slots.length < 2) return;
+        const marker = stack.querySelector(":scope > details");
+        slots.sort((a, b) => cmpId(a.dataset.tweet, b.dataset.tweet));
+        slots.forEach((el) => {
+          if (marker) stack.insertBefore(el, marker);
+          else stack.append(el);
+        });
+      });
+      DATA.newsweekOthers.sort(cmpId);
+      const ids = new Set(DATA.newsweekOthers);
+      document.querySelectorAll(".col.cite [data-tweet]").forEach((el) => ids.add(el.dataset.tweet));
+      ids.forEach((id) => {
+        const n = parseEngagement(DATA.tweets[id]).n;
+        if (n > CITE_MAX) CITE_MAX = n;
+      });
+    }
+
+    function engageEl(t) {
+      const e = parseEngagement(t);
+      const p = document.createElement("p");
+      p.className = "engage";
+      const track = document.createElement("span");
+      track.className = "track";
+      track.setAttribute("aria-hidden", "true");
+      const fill = document.createElement("i");
+      const pct = e.n <= 0 ? 0 : Math.max(8, Math.round(100 * Math.log1p(e.n) / Math.log1p(CITE_MAX)));
+      fill.style.width = pct + "%";
+      track.append(fill);
+      p.append(track);
+      const parts = [
+        [e.lk, "j’aime", "j’aime"],
+        [e.rt, "republication", "republications"],
+        [e.qt, "citation", "citations"],
+        [e.rp, "réponse", "réponses"]
+      ].filter((row) => row[0] > 0).sort((a, b) => b[0] - a[0]);
+      const spoken = parts.map((row) => piece(row[0], row[1], row[2]));
+      const full = e.n <= 0
+        ? "Aucun engagement public"
+        : (e.n + (e.n > 1 ? " engagements : " : " engagement : ") + spoken.join(", "));
+      p.title = full;
+      p.setAttribute("aria-label", full);
+      if (spoken.length) {
+        const num = document.createElement("span");
+        num.className = "num";
+        num.textContent = spoken.slice(0, 2).join(" · ");
+        p.append(num);
+      }
+      if (pct >= 55) p.classList.add("is-notable");
+      return p;
+    }
+
+    function tweetEl(t, badge, compact, citing) {
       const art = document.createElement("article");
       art.className = "tweet" + (compact ? " compact" : "");
       const av = document.createElement("a");
@@ -869,7 +955,9 @@
       const text = document.createElement("p");
       text.className = "text";
       text.innerHTML = linkify(t);
-      body.append(head, pubTypeEl(t), text);
+      body.append(head, pubTypeEl(t));
+      if (citing) body.append(engageEl(t));
+      body.append(text);
       if (t.metrics) {
         const m = document.createElement("p");
         m.className = "metrics";
@@ -888,16 +976,16 @@
           slot.textContent = "Publication introuvable " + slot.dataset.tweet;
           return;
         }
-        slot.append(tweetEl(t, slot.dataset.badge || "", slot.dataset.compact === "1"));
+        slot.append(tweetEl(t, slot.dataset.badge || "", slot.dataset.compact === "1", !!slot.closest(".col.cite")));
       });
       const list = document.getElementById("newsweek-more");
       DATA.newsweekOthers.forEach((id) => {
         const t = DATA.tweets[id];
-        if (t) list.append(tweetEl(t, "", true));
+        if (t) list.append(tweetEl(t, "", true, true));
       });
       const last = DATA.tweets[DATA.newsweekOthers[DATA.newsweekOthers.length - 1]];
       document.getElementById("newsweek-sum").textContent =
-        DATA.newsweekOthers.length + " autres publications originales du corpus anglais, jusqu’au " + (last ? last.time : "") + ".";
+        DATA.newsweekOthers.length + " autres publications originales, de la plus ancienne à la plus récente, jusqu’au " + (last ? last.time : "") + ".";
       renderPages();
     }
 
@@ -1610,6 +1698,7 @@
       t.pubTo = extra.to || "";
     });
 
+    orderCiting();
     hydrate();
     aliasBars();
     apply();
