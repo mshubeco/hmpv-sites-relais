@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sites relais — corpus HMPV</title>
+  <style>
+    :root {
+      --bg: #f3f1ec;
+      --card: #fff;
+      --ink: #1c1917;
+      --muted: #44403c;
+      --faint: #78716c;
+      --line: #e7e5e4;
+      --link: #1d4ed8;
+      --citer: #1e3a5f;
+      --relay: #9a3412;
+      --relay-bg: #fff7ed;
+      --relay-line: #fed7aa;
+      --embed: #166534;
+      --direct: #57534e;
+      --hors: #7f1d1d;
+      --pad: 16px;
+      --w1: 250px;
+      --w2: 220px;
+      --w3: 270px;
+      --gutter: 52px;
+    }
+    * { box-sizing: border-box; }
+    a:focus-visible, button:focus-visible, summary:focus-visible, .bar:focus-visible, #net g:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+    .plain { margin: 8px 0 0; padding-left: 1.15rem; max-width: 62ch; }
+    .plain li { margin: 3px 0; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 16.5px/1.45 "Segoe UI", system-ui, sans-serif; }
+    a { color: var(--link); }
+    button, input { font: inherit; color: inherit; }
+    .wrap { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header.page { padding: 28px 0 0; }
+    .kicker { margin: 0; color: var(--relay); font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    h1 { margin: 6px 0 0; font-size: 32px; font-weight: 650; letter-spacing: -0.03em; line-height: 1.15; }
+    .lede { margin: 10px 0 0; max-width: 42ch; font-size: 18px; }
+    nav.jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    nav.jumps a { text-decoration: none; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+    nav.jumps a:hover { border-color: var(--ink); }
+    .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 8px 0 0; padding: 0; }
+    .facts div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+    .facts dt { font-size: 26px; font-weight: 650; letter-spacing: -0.03em; }
+    .facts dd { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .note { margin: 10px 0 0; max-width: 78ch; color: var(--muted); font-size: 14px; }
+    .grammar { margin: 22px 0 8px; }
+    .grammar h2, .figure-block h2, #volumes h2, .group-lead h2 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+    .flow { display: grid; grid-template-columns: minmax(0, 1.05fr) 92px minmax(0, 0.9fr) 92px minmax(0, 1.05fr); gap: 8px; align-items: start; margin-top: 12px; }
+    .demo { border-radius: 12px; padding: 14px; font-weight: 650; display: flex; align-items: center; background: #fff; min-height: 74px; }
+    .demo small { display: block; font-weight: 500; color: var(--muted); margin-top: 4px; }
+    .demo.cite { border: 1px solid #d6d3d1; border-top: 4px solid var(--citer); }
+    .demo.site { border: 1px solid var(--relay-line); border-top: 4px solid var(--relay); background: var(--relay-bg); }
+    .demo.embed { border: 1px solid #bbf7d0; border-top: 4px solid var(--embed); }
+    .arr { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding-top: 34px; }
+    .arr i { display: block; width: 100%; height: 2px; background: currentColor; position: relative; }
+    .arr i::after { content: ""; position: absolute; right: 0; top: -4px; border-width: 5px 0 5px 7px; border-style: solid; border-color: transparent transparent transparent currentColor; }
+    .arr.cite { color: var(--citer); }
+    .arr.embed { color: var(--relay); }
+    .arr.direct { color: var(--direct); }
+    .arr.direct i, .arr.hors i { height: 0; background: none; border-top: 2px dashed currentColor; }
+    .arr.hors { color: var(--hors); }
+    .toolbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 18px 0 12px; padding: 10px 0; background: #f3f1ec; border-bottom: 1px solid var(--line); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 14px; cursor: pointer; }
+    .chips button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .search { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+    .search input { padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; min-width: min(220px, 60vw); background: #fff; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--ink); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 650; cursor: pointer; }
+    .toggle input { width: 1.05rem; height: 1.05rem; margin: 0; accent-color: var(--relay); }
+    .toggle:has(input:checked) { background: var(--ink); color: #fff; }
+    body:not(.show-texts) .tweet .text,
+    body:not(.show-texts) .tweet .metrics { display: none; }
+    details.method { margin-top: 12px; }
+    details.method summary, #volumes > summary { cursor: pointer; font-weight: 650; }
+    #volumes { margin: 8px 0 22px; }
+    #volumes > summary { font-size: 18px; }
+    #net .av-init { font-size: 9px; font-weight: 700; fill: #fff; }
+    #shown { margin: 0; font-size: 13px; color: var(--faint); }
+    .figure-scroll { overflow: auto; max-height: min(740px, 74vh); border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .colheads { position: sticky; top: 0; z-index: 2; display: grid; background: #fff; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding-top: 8px; padding-bottom: 8px; }
+    .colheads span:nth-child(1) { color: var(--citer); }
+    .colheads span:nth-child(3) { color: var(--relay); }
+    .colheads span:nth-child(5) { color: var(--embed); }
+    #net text { font-family: "Segoe UI", system-ui, sans-serif; }
+    #net .nt { font-size: 13px; font-weight: 650; fill: #1c1917; }
+    #net .ns { font-size: 11px; fill: #44403c; }
+    #net .node { fill: #fff; stroke: #d6d3d1; stroke-width: 1.25; }
+    #net g[data-kind="citer"] .node { stroke: var(--citer); }
+    #net g[data-kind="site"] .node { fill: var(--relay-bg); stroke: var(--relay); }
+    #net g[data-kind="status"] .node { stroke: var(--embed); }
+    #net g[data-kind="gap"] .node { fill: #fafaf9; stroke: #a8a29e; stroke-dasharray: 4 3; }
+    #net g[data-kind="hors"] .node { fill: #fef2f2; stroke: var(--hors); }
+    #net g.is-on .node { stroke: #1c1917; stroke-width: 2.5; }
+    #net g.is-dim, #net path.is-dim { opacity: 0.14; }
+    #net g { cursor: pointer; }
+    #net path.edge { fill: none; }
+    #net path.cite { stroke: var(--citer); }
+    #net path.embed { stroke: var(--relay); }
+    #net path.direct { stroke: var(--direct); stroke-dasharray: 5 4; }
+    #net path.hors { stroke: var(--hors); stroke-dasharray: 5 4; }
+    .figure-tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin: 8px 0; }
+    .legend { margin: 0; color: var(--muted); font-size: 14px; max-width: 78ch; }
+    .legend b.cite { color: var(--citer); }
+    .legend b.embed { color: var(--relay); }
+    .legend b.direct { color: var(--direct); }
+    #expand, .textbtn { background: none; border: 0; padding: 0; color: var(--link); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    #panel { margin: 12px 0; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+    #panel p { margin: 0; max-width: 78ch; }
+    #panel-kicker { color: var(--relay); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    #panel-text { margin-top: 4px; }
+    #panel-go { margin-top: 8px; }
+    #volumes { margin: 8px 0 22px; }
+    .bar-group { margin-top: 12px; }
+    .bar-group h3 { margin: 0 0 8px; font-size: 14px; }
+    .bar { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+    .bar.is-on { border-color: var(--ink); }
+    .bar-name { display: block; font-weight: 650; }
+    .bar-sub { display: block; color: var(--muted); font-size: 13px; }
+    .bar-track { height: 8px; background: #f5f5f4; border-radius: 99px; }
+    .bar-track span { display: block; height: 100%; border-radius: 99px; min-width: 2px; }
+    .bar[data-kind="relay"] .bar-track span { background: var(--relay); }
+    .bar[data-kind="direct"] .bar-track span { background: var(--direct); }
+    .bar[data-kind="hors"] .bar-track span { background: var(--hors); }
+    .bar-val { font-size: 18px; font-variant-numeric: tabular-nums; }
+    .bar-note { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .group-lead { margin: 22px 0 8px; }
+    .relay { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 12px 0; scroll-margin-top: 64px; }
+    .relay.is-on, .mini.is-on { border-color: var(--relay); }
+    .relay-kicker { margin: 0 0 4px; color: var(--relay); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .relay h2, .mini-block h2 { margin: 0; font-size: 22px; letter-spacing: -0.02em; line-height: 1.25; }
+    .relay-sentence { margin: 8px 0 0; max-width: 78ch; }
+    .relay-foot { margin: 10px 0 0; }
+    .col h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    .col h3 span { width: 18px; height: 18px; border-radius: 99px; display: grid; place-items: center; color: #fff; font-size: 11px; letter-spacing: 0; }
+    .col.cite h3 span { background: var(--citer); }
+    .col.mid h3 span { background: var(--relay); }
+    .col.embed h3 span { background: var(--embed); }
+    .stack { display: flex; flex-direction: column; gap: 8px; }
+    .tweet { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    .col.cite .tweet { border-top: 4px solid var(--citer); }
+    .col.embed .tweet { border-top: 4px solid var(--embed); }
+    .tweet.compact { grid-template-columns: 36px minmax(0, 1fr); }
+    .avatar { position: relative; width: 44px; height: 44px; display: block; }
+    .tweet.compact .avatar { width: 36px; height: 36px; }
+    .avatar img, .avatar .fallback { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; }
+    .avatar img { object-fit: cover; z-index: 1; background: #fff; }
+    .avatar .fallback { display: grid; place-items: center; background: var(--citer); color: #fff; font-size: 12px; font-weight: 700; }
+    .tweet-head { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; }
+    .name { color: var(--ink); font-weight: 700; text-decoration: none; }
+    .handle, .time { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .name:hover, .handle:hover, .time:hover { text-decoration: underline; }
+    .badge { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--citer); background: #eef2ff; border-radius: 99px; padding: 1px 7px; }
+    .col.embed .badge { color: var(--embed); background: #f0fdf4; }
+    .text { margin: 4px 0 0; overflow-wrap: anywhere; }
+    .text a { text-decoration: none; }
+    .text a:hover { text-decoration: underline; }
+    .metrics { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+    .site { background: var(--relay-bg); border: 1px solid var(--relay-line); border-top: 4px solid var(--relay); border-radius: 14px; padding: 12px 14px; }
+    .site.gap { background: #fafaf9; border: 1px dashed #a8a29e; border-top: 1px dashed #a8a29e; color: var(--muted); }
+    .domain { margin: 0; color: var(--relay); font-size: 13px; font-weight: 700; }
+    .site.gap .domain { color: var(--direct); }
+    .site h3 { margin: 4px 0 8px; font-size: 16px; letter-spacing: 0; text-transform: none; color: var(--ink); line-height: 1.35; font-weight: 650; }
+    .site h3 a { color: var(--ink); text-decoration: none; }
+    .site h3 a:hover { text-decoration: underline; }
+    .source-note, .count-line { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    details.addr { margin-top: 8px; }
+    details.addr summary, details.more summary { cursor: pointer; color: var(--link); font-size: 14px; }
+    .precise { display: block; margin-top: 6px; font-size: 13px; overflow-wrap: anywhere; }
+    .more-list { max-height: 440px; overflow: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding-right: 2px; }
+    .count-only { border: 1px solid var(--line); border-top: 4px solid var(--citer); border-radius: 14px; padding: 12px 14px; background: #fff; }
+    .count-only strong { display: block; font-size: 28px; letter-spacing: -0.03em; }
+    .outside { border: 1px solid #fecaca; border-top: 4px solid var(--hors); background: #fef2f2; border-radius: 14px; padding: 12px 14px; }
+    .outside .domain { color: var(--hors); }
+    .mini { display: grid; grid-template-columns: minmax(90px, 0.7fr) 64px minmax(0, 1.3fr) 64px minmax(0, 0.9fr); gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); scroll-margin-top: 64px; }
+    .mini-cite strong { display: block; font-size: 22px; letter-spacing: -0.03em; color: var(--citer); }
+    .mini-cite span, .mini-status span { color: var(--muted); font-size: 13px; }
+    .mini .arr { font-size: 10px; padding-top: 0; }
+    .mini-status span, .mini-status .textbtn { display: block; }
+    .mini-status .textbtn { margin-top: 6px; }
+    .mini-site .title { color: var(--ink); font-weight: 650; text-decoration: none; }
+    .mini-site .title:hover { text-decoration: underline; }
+    .clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .extra { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    #net-empty { margin: 8px 0 0; }
+    footer.page { color: var(--muted); font-size: 14px; padding: 8px 0 48px; }
+    footer.page a { overflow-wrap: anywhere; }
+    :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    @media (max-width: 900px) {
+      .facts { grid-template-columns: 1fr 1fr; }
+      h1 { font-size: 26px; }
+      .flow, .mini { grid-template-columns: 1fr; }
+      .arr { flex-direction: row; justify-content: flex-start; padding: 2px 0 2px 8px; }
+      .arr i { width: 2px; height: 28px; }
+      .arr i::after { right: auto; left: -4px; top: auto; bottom: 0; border-width: 7px 5px 0 5px; border-color: currentColor transparent transparent transparent; }
+      .arr.direct i, .arr.hors i { width: 0; border-top: 0; border-left: 2px dashed currentColor; }
+      .bar { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page">
+      <p class="kicker">Corpus HMPV · PADMEN FR et PADMEN EN</p>
+      <h1>Sites relais entre deux publications</h1>
+      <p class="lede">Un site extérieur fait le passage entre deux publications du corpus.</p>
+      <nav class="jumps" aria-label="Aller au passage">
+        <a href="#reseau">Réseau</a>
+        <a href="#onu">Passage simple</a>
+        <a href="#covid">22 pages, un statut</a>
+        <a href="#plusieurs">Plusieurs statuts</a>
+        <a href="#direct">Sans page</a>
+        <a href="#qactus">Hors corpus</a>
+      </nav>
+      <dl class="facts">
+        <div><dt>145</dt><dd>pages externes contiennent un statut du corpus</dd></div>
+        <div><dt>90</dt><dd>publications du corpus atteintes par ces pages</dd></div>
+        <div><dt>96</dt><dd>pages en contiennent un seul</dd></div>
+        <div><dt>49</dt><dd>pages en contiennent plusieurs</dd></div>
+      </dl>
+      <details class="method">
+        <summary>D’où viennent ces chiffres</summary>
+        <p>Chiffres après retrait des réseaux sociaux, des adresses qui aboutissent sur X, et fusion des doublons. 7&nbsp;634 pages avaient été demandées, 203 contenaient un statut. La page ouvre les passages où l’intermédiaire se voit. Elle ne redessine pas les 145 pages une par une.</p>
+      </details>
+    </header>
+
+    <section class="grammar" aria-labelledby="how">
+      <h2 id="how">Comment lire un passage</h2>
+      <div class="flow">
+        <div class="demo cite">Publication du corpus<small>elle cite l’adresse de la page</small></div>
+        <div class="arr cite"><i></i><b>cite l’adresse</b></div>
+        <div class="demo site">Site ou média<small>hors corpus, c’est le relais</small></div>
+        <div class="arr embed"><i></i><b>reprend le statut</b></div>
+        <div class="demo embed">Autre publication du corpus<small>le statut présent dans la page</small></div>
+      </div>
+    </section>
+
+    <div class="toolbar" id="toolbar">
+      <label class="toggle" for="show-texts">
+        <input id="show-texts" type="checkbox">
+        Afficher le texte des publications qui citent, et de celles qui sont reprises
+      </label>
+      <div class="chips" role="toolbar" aria-label="Filtrer les passages">
+        <button type="button" data-filter="all" aria-pressed="true">Tout</button>
+        <button type="button" data-filter="simple" aria-pressed="false">1 page, 1 statut</button>
+        <button type="button" data-filter="crowd" aria-pressed="false">Page très citée</button>
+        <button type="button" data-filter="fan" aria-pressed="false">22 pages, 1 statut</button>
+        <button type="button" data-filter="multi" aria-pressed="false">Plusieurs statuts</button>
+        <button type="button" data-filter="direct" aria-pressed="false">Sans page</button>
+        <button type="button" data-filter="hors" aria-pressed="false">Hors corpus</button>
+      </div>
+      <label class="search">Recherche
+        <input id="q" type="search" placeholder="Compte, domaine, titre" autocomplete="off">
+      </label>
+      <p id="shown" aria-live="polite"></p>
+    </div>
+
+    <section class="figure-block" id="reseau">
+      <h2>Réseau des passages</h2>
+      <div class="figure-tools">
+        <p class="legend"><b class="cite">Bleu</b> cite l’adresse. <b class="embed">Rouille</b> reprend le statut. <b class="direct">Tireté</b> pas de page, ou hors corpus. Cliquez un nom.</p>
+        <button type="button" id="expand" aria-expanded="false">Déplier les 17 domaines</button>
+        <p id="expand-note" class="note" hidden>Le filtre ouvre les domaines un par un.</p>
+      </div>
+      <div class="figure-scroll" id="figure-scroll">
+        <div id="figure-inner">
+          <div id="colheads" class="colheads">
+            <span>Publication qui cite</span><span></span>
+            <span>Site relais</span><span></span>
+            <span>Publication reprise</span>
+          </div>
+          <svg id="net" role="group" aria-label="Réseau des sites relais"></svg>
+        </div>
+      </div>
+      <p id="net-empty" hidden>Aucun passage ne correspond à ce filtre.</p>
+      <ul id="net-list" class="sr-only"></ul>
+      <div id="panel">
+        <p id="panel-kicker">Passage</p>
+        <p id="panel-text">Cliquez un compte ou un site. Le tracé qui reste est son passage.</p>
+        <p id="panel-go-wrap" hidden><button type="button" class="textbtn" id="panel-go">Voir ce passage en détail</button></p>
+      </div>
+    </section>
+
+    <details id="volumes">
+      <summary>Combien de publications citent cette adresse</summary>
+      <p class="note">Chaque barre est l’effectif de cette adresse. Elles ne se cumulent pas. Le plus grand effectif indiqué est 49.</p>
+      <div class="bar-group">
+        <h3>Sans page entre les deux</h3>
+        <div class="bar" data-kind="direct" data-tags="direct" data-n="49" data-select="gap-brics" data-nodes="c-b49 gap-brics s-br" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">@BRICSinfo · 3 janvier</span><span class="bar-sub">publications originales · l’adresse citée est le statut</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">49</strong>
+        </div>
+        <div class="bar" data-kind="direct" data-tags="direct" data-n="41" data-select="gap-covid" data-nodes="c-c41 gap-covid s-c1" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">@COVID19_disease · 1<sup>er</sup> janvier</span><span class="bar-sub">publications originales · en plus des 22 pages</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">41</strong>
+        </div>
+        <div class="bar" data-kind="direct" data-tags="direct" data-n="11" data-select="gap-brics6" data-nodes="c-b11 gap-brics6 s-br6" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">@BRICSinfo · 6 janvier</span><span class="bar-sub">publications originales · second statut, même forme</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">11</strong>
+        </div>
+      </div>
+      <div class="bar-group">
+        <h3>Par une page qui reprend un statut du corpus</h3>
+        <div class="bar" data-kind="relay" data-tags="fan crowd" data-n="35" data-select="site-nw" data-nodes="site-nw c-nw c-34 s-c1" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">newsweek.com</span><span class="bar-sub">le tweet de @Newsweek et 34 autres originales du corpus anglais · 102 avec les retweets</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">35</strong>
+        </div>
+        <div class="bar" data-kind="relay" data-tags="fan crowd" data-n="5" data-select="page-livemint" data-nodes="s-c1" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">livemint.com</span><span class="bar-sub">publications du corpus · 1 statut dans la page</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">5</strong>
+        </div>
+        <div class="bar" data-kind="relay" data-tags="fan crowd" data-n="3" data-select="page-bi" data-nodes="s-c1" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">businessinsider.com</span><span class="bar-sub">publications du corpus · 1 statut dans la page</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">3</strong>
+        </div>
+        <div class="bar" data-kind="relay" data-tags="fan multi" data-n="2" data-select="site-fact" data-nodes="site-fact c-lets c-fc s-c1 s-nab" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">english.factcrescendo.com</span><span class="bar-sub">publications du corpus · 2 statuts dans la page</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">2</strong>
+        </div>
+        <p class="bar-note" data-tags="fan">16 autres pages de cette liste sont citées par 1 publication du corpus, dont AfricasNow. L’effectif de chacune est dans la liste des 19 pages.</p>
+      </div>
+      <div class="bar-group">
+        <h3>Page citée, statut hors corpus</h3>
+        <div class="bar" data-kind="hors" data-tags="hors" data-n="17" data-select="site-q" data-nodes="site-q c-q s-hors" role="button" tabindex="0">
+          <span class="bar-label"><span class="bar-name">qactus.fr</span><span class="bar-sub">publications originales du corpus français · la page ne reprend pas de statut du corpus</span></span>
+          <span class="bar-track" aria-hidden="true"><span></span></span>
+          <strong class="bar-val">17</strong>
+        </div>
+      </div>
+    </details>
+
+    <main id="passages">
+      <article class="relay" id="onu" data-tags="simple" data-nodes="c-four site-20 s-un">
+        <p class="relay-kicker">Passage simple · corpus français</p>
+        <h2>20 Minutes, entre @FourageBernard et @UNGeneva</h2>
+        <div class="flow">
+          <div class="col cite">
+            <h3><span>1</span> Cite l’adresse</h3>
+            <div data-tweet="1879251878426685803" data-badge="Autre compte du corpus"></div>
+          </div>
+          <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+          <div class="col mid">
+            <h3><span>2</span> Site relais</h3>
+            <div class="site">
+              <p class="domain">20minutes.fr</p>
+              <h3><a href="https://www.20minutes.fr/sante/4133486-20250114-non-confinement-lie-virus-hmpv-prevu-france" target="_blank" rel="noopener">Non, un confinement lié au virus HMPV n’est pas prévu en France</a></h3>
+              <p class="source-note">L’article embarque le statut de @UNGeneva du 7 janvier 2025.</p>
+              <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://www.20minutes.fr/sante/4133486-20250114-non-confinement-lie-virus-hmpv-prevu-france" target="_blank" rel="noopener">https://www.20minutes.fr/sante/4133486-20250114-non-confinement-lie-virus-hmpv-prevu-france</a></details>
+            </div>
+          </div>
+          <div class="arr embed" aria-hidden="true"><i></i><b>reprend le statut</b></div>
+          <div class="col embed">
+            <h3><span>3</span> Statut repris</h3>
+            <div data-tweet="1876645174371078499" data-badge="Repris dans la page"></div>
+          </div>
+        </div>
+        <p class="relay-foot"><button type="button" class="textbtn" data-select="site-20">Voir ce passage dans le réseau</button></p>
+      </article>
+
+      <article class="relay" id="rtbf" data-tags="simple" data-nodes="c-arz site-rtbf s-wire">
+        <p class="relay-kicker">Passage simple</p>
+        <h2>La RTBF, entre @arztdiego et @thewire_in</h2>
+        <div class="flow">
+          <div class="col cite">
+            <h3><span>1</span> Cite l’adresse</h3>
+            <div data-tweet="1876585649458811292" data-badge="Autre compte du corpus"></div>
+          </div>
+          <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+          <div class="col mid">
+            <h3><span>2</span> Site relais</h3>
+            <div class="site">
+              <p class="domain">rtbf.be</p>
+              <h3><a href="https://www.rtbf.be/article/le-virus-hmpv-qui-circule-en-chine-n-est-pas-un-nouveau-virus-mysterieux-11485602" target="_blank" rel="noopener">Le virus HMPV qui circule en Chine n’est pas « un nouveau virus mystérieux »</a></h3>
+              <p class="source-note">L’article embarque le statut. Ce statut cite par ailleurs <a href="https://thewire.in/health/hmpv-virus-cases-india-covid-media-panic" target="_blank" rel="noopener">l’article de The Wire</a>.</p>
+              <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://www.rtbf.be/article/le-virus-hmpv-qui-circule-en-chine-n-est-pas-un-nouveau-virus-mysterieux-11485602" target="_blank" rel="noopener">https://www.rtbf.be/article/le-virus-hmpv-qui-circule-en-chine-n-est-pas-un-nouveau-virus-mysterieux-11485602</a></details>
+            </div>
+          </div>
+          <div class="arr embed" aria-hidden="true"><i></i><b>reprend le statut</b></div>
+          <div class="col embed">
+            <h3><span>3</span> Statut repris</h3>
+            <div data-tweet="1876516618211397674" data-badge="Repris dans la page"></div>
+          </div>
+        </div>
+        <p class="relay-foot"><button type="button" class="textbtn" data-select="site-rtbf">Voir ce passage dans le réseau</button></p>
+      </article>
+
+      <section class="group" id="covid">
+        <div class="group-lead" data-tags="fan">
+          <h2>Vingt-deux pages reprennent le même statut</h2>
+          <p class="note">Trois pages sont ouvertes ici. Les 19 autres sont en liste. <a href="#direct">Le même statut, sans page</a>.</p>
+        </div>
+
+        <article class="relay" id="rel-franceinfo" data-tags="simple fan" data-nodes="c-fi site-fi s-c1">
+          <p class="relay-kicker">Le média cite son article</p>
+          <h2>franceinfo, entre son tweet et @COVID19_disease</h2>
+          <div class="flow">
+            <div class="col cite">
+              <h3><span>1</span> Cite l’adresse</h3>
+              <div data-tweet="1876889859941392840" data-badge="Compte du média"></div>
+            </div>
+            <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+            <div class="col mid">
+              <h3><span>2</span> Site relais</h3>
+              <div class="site">
+                <p class="domain">franceinfo.fr</p>
+                <h3><a href="https://www.franceinfo.fr/replay-radio/le-vrai-du-faux/cinq-ans-apres-le-covid-19-la-chine-a-t-elle-declare-l-etat-d-urgence-sanitaire-a-cause-d-une-epidemie-de-hmpv_6981089.html" target="_blank" rel="noopener">Cinq ans après le Covid-19, la Chine a-t-elle déclaré l’état d’urgence sanitaire à cause d’une épidémie de HMPV ?</a></h3>
+                <p class="source-note">Le statut est cité dans le corps de l’article. Dans le tweet, le lien court est <a href="https://l.francetvinfo.fr/Fgh" target="_blank" rel="noopener">l.francetvinfo.fr/Fgh</a>. Il ouvre cette page.</p>
+                <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://www.franceinfo.fr/replay-radio/le-vrai-du-faux/cinq-ans-apres-le-covid-19-la-chine-a-t-elle-declare-l-etat-d-urgence-sanitaire-a-cause-d-une-epidemie-de-hmpv_6981089.html" target="_blank" rel="noopener">https://www.franceinfo.fr/replay-radio/le-vrai-du-faux/cinq-ans-apres-le-covid-19-la-chine-a-t-elle-declare-l-etat-d-urgence-sanitaire-a-cause-d-une-epidemie-de-hmpv_6981089.html</a></details>
+              </div>
+            </div>
+            <div class="arr embed" aria-hidden="true"><i></i><b>reprend le statut</b></div>
+            <div class="col embed">
+              <h3><span>3</span> Statut repris</h3>
+              <div data-tweet="1874481684122607783" data-badge="Repris dans la page"></div>
+            </div>
+          </div>
+          <p class="relay-foot"><button type="button" class="textbtn" data-select="site-fi">Voir ce passage dans le réseau</button></p>
+        </article>
+
+        <article class="relay" id="rel-newsweek" data-tags="fan crowd" data-nodes="c-nw c-34 site-nw s-c1">
+          <p class="relay-kicker">Une page, beaucoup de publications</p>
+          <h2>Newsweek, entre 35 publications et @COVID19_disease</h2>
+          <p class="count-line">35 publications originales. 102 en comptant les retweets.</p>
+          <div class="flow">
+            <div class="col cite">
+              <h3><span>1</span> Citent l’adresse</h3>
+              <div class="stack">
+                <div data-tweet="1875156830797824357" data-badge="Compte du média"></div>
+                <details class="more">
+                  <summary id="newsweek-sum">34 autres publications originales</summary>
+                  <div class="more-list" id="newsweek-more"></div>
+                </details>
+              </div>
+            </div>
+            <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+            <div class="col mid">
+              <h3><span>2</span> Site relais</h3>
+              <div class="site">
+                <p class="domain">newsweek.com</p>
+                <h3><a href="https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126" target="_blank" rel="noopener">HMPV: China’s New Virus Outbreak Explained</a></h3>
+                <p class="source-note">Le statut est embarqué dans l’article : <a href="https://x.com/i/status/1874481684122607783" target="_blank" rel="noopener">x.com/i/status/1874481684122607783</a>.</p>
+                <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126" target="_blank" rel="noopener">https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126</a></details>
+              </div>
+            </div>
+            <div class="arr embed" aria-hidden="true"><i></i><b>reprend le statut</b></div>
+            <div class="col embed">
+              <h3><span>3</span> Statut repris</h3>
+              <div data-tweet="1874481684122607783" data-badge="Repris dans la page"></div>
+            </div>
+          </div>
+          <p class="relay-foot"><button type="button" class="textbtn" data-select="site-nw">Voir ce passage dans le réseau</button></p>
+        </article>
+
+        <article class="relay" id="rel-tr" data-tags="fan" data-nodes="c-fr c-sch site-tr s-c1">
+          <p class="relay-kicker">Même article, autre adresse</p>
+          <h2>La traduction de Newsweek reprend le même statut</h2>
+          <div class="flow">
+            <div class="col cite">
+              <h3><span>1</span> Citent l’adresse</h3>
+              <div class="stack">
+                <div data-tweet="1875485955513336286" data-badge="Autre compte"></div>
+                <div data-tweet="1875498530535882775" data-badge="Autre compte"></div>
+              </div>
+            </div>
+            <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+            <div class="col mid">
+              <h3><span>2</span> Site relais</h3>
+              <div class="site">
+                <p class="domain">newsweek.com · version traduite</p>
+                <h3><a href="https://www-newsweek-com.translate.goog/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126?_x_tr_sl=en&amp;_x_tr_tl=fr&amp;_x_tr_hl=fr&amp;_x_tr_pto=wapp" target="_blank" rel="noopener">HMPV: China’s New Virus Outbreak Explained</a></h3>
+                <p class="source-note">Même article, passé par Google Traduction. Il contient le même statut. L’adresse n’est pas celle de newsweek.com.</p>
+                <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://www-newsweek-com.translate.goog/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126?_x_tr_sl=en&amp;_x_tr_tl=fr&amp;_x_tr_hl=fr&amp;_x_tr_pto=wapp" target="_blank" rel="noopener">https://www-newsweek-com.translate.goog/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126?_x_tr_sl=en&amp;_x_tr_tl=fr&amp;_x_tr_hl=fr&amp;_x_tr_pto=wapp</a></details>
+              </div>
+            </div>
+            <div class="arr embed" aria-hidden="true"><i></i><b>reprend le statut</b></div>
+            <div class="col embed">
+              <h3><span>3</span> Statut repris</h3>
+              <div data-tweet="1874481684122607783" data-badge="Même statut"></div>
+            </div>
+          </div>
+          <p class="relay-foot"><button type="button" class="textbtn" data-select="site-tr">Voir ce passage dans le réseau</button></p>
+        </article>
+
+        <article class="relay" id="autres" data-tags="fan crowd multi" data-nodes="site-g17 s-c1">
+          <p class="relay-kicker">Le même statut, d’autres pages</p>
+          <h2>19 autres pages reprennent ce statut</h2>
+          <p class="count-line" id="autres-count"></p>
+          <div id="page-rows"></div>
+        </article>
+      </section>
+
+      <section class="group" id="plusieurs">
+        <div class="group-lead" data-tags="multi">
+          <h2>Une page reprend plusieurs statuts</h2>
+          <p class="note">Trois pages. 26 éditions recopient @UNGeneva et @WHO.</p>
+        </div>
+
+        <article class="relay" id="rel-fact" data-tags="fan multi" data-nodes="c-lets c-fc site-fact s-c1 s-nab">
+          <p class="relay-kicker">Deux statuts, deux comptes</p>
+          <h2>Fact Crescendo relie @COVID19_disease et @nabilajamal_</h2>
+          <div class="flow">
+            <div class="col cite">
+              <h3><span>1</span> Citent l’adresse</h3>
+              <div class="stack">
+                <div data-tweet="1875248246047851001" data-badge="Autre compte"></div>
+                <div data-tweet="1875432320364425380" data-badge="Compte du média"></div>
+              </div>
+            </div>
+            <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+            <div class="col mid">
+              <h3><span>2</span> Site relais</h3>
+              <div class="site">
+                <p class="domain">english.factcrescendo.com</p>
+                <h3><a href="https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms" target="_blank" rel="noopener">Human Metapneumovirus (HMPV): Covid-19 like Health Crisis Speculations in China |</a></h3>
+                <p class="source-note">La page cite deux publications du corpus : le statut du 1<sup>er</sup> janvier, et un statut de @nabilajamal_.</p>
+                <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms" target="_blank" rel="noopener">https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms</a></details>
+              </div>
+            </div>
+            <div class="arr embed" aria-hidden="true"><i></i><b>reprend les statuts</b></div>
+            <div class="col embed">
+              <h3><span>3</span> Statuts repris</h3>
+              <div class="stack">
+                <div data-tweet="1874481684122607783" data-badge="Repris dans la page" data-compact="1"></div>
+                <div data-tweet="1875132118021681211" data-badge="Repris dans la page"></div>
+              </div>
+            </div>
+          </div>
+          <p class="relay-foot"><button type="button" class="textbtn" data-select="site-fact">Voir ce passage dans le réseau</button></p>
+        </article>
+
+        <article class="relay" id="rel-africa" data-tags="fan multi" data-nodes="c-af site-af s-c1 s-c3">
+          <p class="relay-kicker">Deux statuts, un seul compte</p>
+          <h2>AfricasNow relie deux statuts de @COVID19_disease</h2>
+          <div class="flow">
+            <div class="col cite">
+              <h3><span>1</span> Cite l’adresse</h3>
+              <div data-tweet="1875894349533523991" data-badge="Compte du média"></div>
+            </div>
+            <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+            <div class="col mid">
+              <h3><span>2</span> Site relais</h3>
+              <div class="site">
+                <p class="domain">africasnow.com</p>
+                <h3><a href="https://africasnow.com/2025/01/05/hmpv-covid-like-disease-ravaging-china-here-is-what-we-know/" target="_blank" rel="noopener">HMPV: Covid-Like Disease Ravaging China - Here Is What We Know - AfricasNow</a></h3>
+                <p class="source-note">Les deux statuts sont du même compte, @COVID19_disease : le 1<sup>er</sup> janvier et le 3 janvier.</p>
+                <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://africasnow.com/2025/01/05/hmpv-covid-like-disease-ravaging-china-here-is-what-we-know/" target="_blank" rel="noopener">https://africasnow.com/2025/01/05/hmpv-covid-like-disease-ravaging-china-here-is-what-we-know/</a></details>
+              </div>
+            </div>
+            <div class="arr embed" aria-hidden="true"><i></i><b>reprend les statuts</b></div>
+            <div class="col embed">
+              <h3><span>3</span> Statuts repris</h3>
+              <div class="stack">
+                <div data-tweet="1874481684122607783" data-badge="Repris dans la page" data-compact="1"></div>
+                <div data-tweet="1875222668980723816" data-badge="Repris dans la page"></div>
+              </div>
+            </div>
+          </div>
+          <p class="relay-foot"><button type="button" class="textbtn" data-select="site-af">Voir ce passage dans le réseau</button></p>
+        </article>
+
+        <article class="relay" id="rel-echo" data-tags="multi" data-nodes="c-bm c-ola site-echo site-ed s-un s-who">
+          <p class="relay-kicker">Une paire recopiée · 26 éditions</p>
+          <h2>Le Bournemouth Echo relie @UNGeneva et @WHO</h2>
+          <p class="count-line">26 éditions recopient cette paire. 25 autres domaines ne sont pas listés ici.</p>
+          <div class="flow">
+            <div class="col cite">
+              <h3><span>1</span> Citent l’adresse</h3>
+              <div class="stack">
+                <div data-tweet="1877719993388765205" data-badge="Compte du média"></div>
+                <div data-tweet="1877771240443621817" data-badge="Republication"></div>
+              </div>
+            </div>
+            <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+            <div class="col mid">
+              <h3><span>2</span> Site relais</h3>
+              <div class="site">
+                <p class="domain">bournemouthecho.co.uk</p>
+                <h3><a href="https://www.bournemouthecho.co.uk/news/national/uk-today/24847965.hmpv-worried-uk/?ref=rss" target="_blank" rel="noopener">What is HMPV and should we be worried about it in the UK? | Bournemouth Echo</a></h3>
+                <p class="source-note">Les tweets citent <a href="https://ift.tt/BFjCMDJ" target="_blank" rel="noopener">ift.tt/BFjCMDJ</a>, qui ouvre cet article.</p>
+                <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://www.bournemouthecho.co.uk/news/national/uk-today/24847965.hmpv-worried-uk/?ref=rss" target="_blank" rel="noopener">https://www.bournemouthecho.co.uk/news/national/uk-today/24847965.hmpv-worried-uk/?ref=rss</a></details>
+              </div>
+            </div>
+            <div class="arr embed" aria-hidden="true"><i></i><b>reprend les statuts</b></div>
+            <div class="col embed">
+              <h3><span>3</span> Statuts repris</h3>
+              <div class="stack">
+                <div data-tweet="1876645174371078499" data-badge="Repris dans la page" data-compact="1"></div>
+                <div data-tweet="1876715280224702652" data-badge="Repris dans la page"></div>
+              </div>
+            </div>
+          </div>
+          <p class="relay-foot"><button type="button" class="textbtn" data-select="site-echo">Voir ce passage dans le réseau</button></p>
+        </article>
+      </section>
+
+      <article class="relay" id="direct" data-tags="direct" data-nodes="c-b49 gap-brics s-br c-b11 gap-brics6 s-br6 c-c41 gap-covid s-c1">
+        <p class="relay-kicker">Pas de site entre les deux</p>
+        <h2>Le lien cité est le statut lui-même</h2>
+        <ul class="plain">
+          <li>49 publications originales citent @BRICSinfo, 3 janvier.</li>
+          <li>11 publications originales citent @BRICSinfo, 6 janvier.</li>
+          <li>41 publications originales citent @COVID19_disease, 1<sup>er</sup> janvier, sans page.</li>
+          <li>Aucune publication ne cite les deux adresses.</li>
+        </ul>
+        <div class="flow">
+          <div class="col cite">
+            <h3><span>1</span> Citent le statut</h3>
+            <div class="stack">
+              <div data-tweet="1875288103243673992" data-badge="Exemple, sur 49"></div>
+              <div data-tweet="1875410960288247979" data-badge="Exemple, sur 49"></div>
+              <div data-tweet="1875272624839987510" data-badge="Exemple, sur 49"></div>
+            </div>
+          </div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>sans page</b></div>
+          <div class="col mid">
+            <h3><span>2</span> Pas de site relais</h3>
+            <div class="site gap">
+              <p class="domain">Pas de page extérieure</p>
+              <h3>Le lien ouvre le statut sur X</h3>
+              <p class="source-note">Rien n’est lu entre les deux publications. Ce n’est pas un site relais.</p>
+            </div>
+          </div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>adresse du statut</b></div>
+          <div class="col embed">
+            <h3><span>3</span> Statut cité</h3>
+            <div data-tweet="1875271122398376216" data-badge="Cité par son adresse"></div>
+          </div>
+        </div>
+        <div class="flow">
+          <div class="col cite">
+            <h3><span>1</span> Second statut</h3>
+            <div class="count-only"><strong>11</strong><span>publications originales citent le statut du 6 janvier. Leurs textes ne sont pas ouverts sur cette page.</span></div>
+          </div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>sans page</b></div>
+          <div class="col mid">
+            <h3><span>2</span> Pas de site relais</h3>
+            <div class="site gap">
+              <p class="domain">Pas de page extérieure</p>
+              <h3>Même forme que le 3 janvier</h3>
+            </div>
+          </div>
+          <div class="arr direct" aria-hidden="true"><i></i><b>adresse du statut</b></div>
+          <div class="col embed">
+            <h3><span>3</span> Statut cité</h3>
+            <div class="count-only"><strong>6 jan</strong><span>Le texte de ce statut n’est pas reproduit ici.</span><a href="https://x.com/BRICSinfo/status/1876127350594957707" target="_blank" rel="noopener">Ouvrir le statut du 6 janvier</a></div>
+          </div>
+        </div>
+        <p class="relay-foot"><button type="button" class="textbtn" data-select="gap-brics">Voir l’absence de page dans le réseau</button></p>
+      </article>
+
+      <article class="relay" id="qactus" data-tags="hors" data-nodes="c-q site-q s-hors">
+        <p class="relay-kicker">Page très citée · hors corpus</p>
+        <h2>Qactus ne revient pas dans le corpus</h2>
+        <div class="flow">
+          <div class="col cite">
+            <h3><span>1</span> Citent l’adresse</h3>
+            <div class="count-only"><strong>17</strong><span>publications originales du corpus français. Les textes ne sont pas ouverts sur cette page.</span></div>
+          </div>
+          <div class="arr cite" aria-hidden="true"><i></i><b>cite l’adresse</b></div>
+          <div class="col mid">
+            <h3><span>2</span> Site</h3>
+            <div class="site">
+              <p class="domain">qactus.fr</p>
+              <h3><a href="https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/" target="_blank" rel="noopener">Page du 5 janvier 2025</a></h3>
+              <p class="source-note">Page lue. Les statuts qu’elle contient sont hors des deux corpus.</p>
+              <details class="addr"><summary>Adresse complète</summary><a class="precise" href="https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/" target="_blank" rel="noopener">https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/</a></details>
+            </div>
+          </div>
+          <div class="arr hors" aria-hidden="true"><i></i><b>hors corpus</b></div>
+          <div class="col embed">
+            <h3><span>3</span> N’atteint pas le corpus</h3>
+            <div class="outside">
+              <p class="domain">Pas une publication du corpus</p>
+              <p>Les deux statuts lus sur cette page ne sont ni dans PADMEN FR ni dans PADMEN EN. Le passage s’arrête hors corpus.</p>
+            </div>
+          </div>
+        </div>
+        <p class="relay-foot"><button type="button" class="textbtn" data-select="site-q">Voir ce cas dans le réseau</button></p>
+      </article>
+    </main>
+
+    <footer class="page">
+      <details class="method">
+        <summary>Lecture du 16 novembre 2026</summary>
+        <p>7&nbsp;634 pages citées par les deux corpus ont été demandées, après retrait des réseaux sociaux. 203 contenaient un statut. Une fois retirées les adresses qui aboutissent sur X, et une fois les doublons réunis, 145 pages externes contiennent un statut du corpus&nbsp;: 96 en citent un seul, 49 en citent plusieurs. Elles atteignent 90 publications du corpus. Aucune page ne fait que réafficher le tweet qui la partage.</p>
+        <p>Qactus, <a href="https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/" target="_blank" rel="noopener">https://qactus.fr/2025/01/05/chine-une-epidemie-de-metapneumovirus-a-ete-enregistree-en-chine/</a>, est cité par 17 publications originales du corpus français. Les deux statuts présents sur cette page ne sont dans aucun des deux corpus. NDTV, WION et Reuters ont souvent refusé la lecture automatique.</p>
+      </details>
+    </footer>
+  </div>
+
+  <script id="boot" type="application/json">{"tweets":{"1876889859941392840":{"name":"franceinfo","handle":"franceinfo","profile":"https://x.com/franceinfo","status":"https://x.com/franceinfo/status/1876889859941392840","time":"8 janvier 2025, 07:13","text":"Cinq ans après le Covid-19, la Chine a-t-elle déclaré l'état d'urgence sanitaire à cause d'une épidémie de HMPV ?\n\nhttps://t.co/tXTPeaY9eR","links":[{"href":"https://www.franceinfo.fr/replay-radio/le-vrai-du-faux/cinq-ans-apres-le-covid-19-la-chine-a-t-elle-declare-l-etat-d-urgence-sanitaire-a-cause-d-une-epidemie-de-hmpv_6981089.html","label":"https://t.co/tXTPeaY9eR"}],"metrics":"4 réponses · 3 republications · 2 j’aime","avatar":"https://pbs.twimg.com/profile_images/2100872242863194112/G12zLDkC_400x400.png","fallback":"FR"},"1875156830797824357":{"name":"Newsweek","handle":"Newsweek","profile":"https://x.com/Newsweek","status":"https://x.com/Newsweek/status/1875156830797824357","time":"3 janvier 2025, 12:26","text":"HMPV: China's new virus outbreak explained https://t.co/5IaOoYMrUD","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/5IaOoYMrUD"}],"metrics":"15 réponses · 79 republications · 25 citations · 109 j’aime","avatar":"https://pbs.twimg.com/profile_images/1966063606878937088/eKtLOYO__400x400.jpg","fallback":"NE"},"1875179022096978123":{"name":"OneMoreCorrespondent","handle":"ABoleynGirl","profile":"https://x.com/ABoleynGirl","status":"https://x.com/ABoleynGirl/status/1875179022096978123","time":"3 janvier 2025, 13:54","text":"\"Like other..viruses, #HMPV..spreads from person to person through droplets from coughing and sneezing, human contact such as hugging or kissing, and touching surfaces and objects contaminated with the virus and then the mouth, nose or eyes.\"\n#Flu\nhttps://t.co/i1OgETNAYN","links":[{"href":"https://x.com/hashtag/HMPV","label":"#HMPV"},{"href":"https://x.com/hashtag/Flu","label":"#Flu"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/i1OgETNAYN"}],"metrics":"1 réponses","avatar":"","fallback":"ON"},"1875235096216682787":{"name":"AVSEC Pro","handle":"avsec_pro","profile":"https://x.com/avsec_pro","status":"https://x.com/avsec_pro/status/1875235096216682787","time":"3 janvier 2025, 17:37","text":"HMPV: China New Virus Outbreak Explained  https://t.co/H0Ai7vr7Cg","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/H0Ai7vr7Cg"}],"metrics":"2 réponses","avatar":"","fallback":"AP"},"1875237623217975728":{"name":"John Michael Sucker","handle":"JMSucker","profile":"https://x.com/JMSucker","status":"https://x.com/JMSucker/status/1875237623217975728","time":"3 janvier 2025, 17:47","text":"Good read, good journalism ...\n\nHMPV: China's new virus outbreak explained https://t.co/mjqIiOEFXI","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/mjqIiOEFXI"}],"metrics":"1 réponses","avatar":"","fallback":"JM"},"1875237666901651526":{"name":"John Michael Sucker","handle":"JMSucker","profile":"https://x.com/JMSucker","status":"https://x.com/JMSucker/status/1875237666901651526","time":"3 janvier 2025, 17:47","text":"HMPV: China's new virus outbreak explained https://t.co/mjqIiOEFXI","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/mjqIiOEFXI"}],"metrics":"1 réponses","avatar":"","fallback":"JM"},"1875250250547347820":{"name":"🇺🇸 ☀ Crystal Powell ☀ 🇺🇸","handle":"Sunshine7978","profile":"https://x.com/Sunshine7978","status":"https://x.com/Sunshine7978/status/1875250250547347820","time":"3 janvier 2025, 18:37","text":"Get your bingo card ready: another new China virus called HMPV is being reported. 🦠\n#HappyNewYear\n\nhttps://t.co/FSO8pKlfTQ","links":[{"href":"https://x.com/hashtag/HappyNewYear","label":"#HappyNewYear"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/FSO8pKlfTQ"}],"metrics":"","avatar":"","fallback":"CP"},"1875270321970016609":{"name":"R C Taylor","handle":"littlenewsnetwk","profile":"https://x.com/littlenewsnetwk","status":"https://x.com/littlenewsnetwk/status/1875270321970016609","time":"3 janvier 2025, 19:57","text":"HMPV: China's New Virus Outbreak Explained.\n\nhttps://t.co/b2BGmdH4eh","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/b2BGmdH4eh"}],"metrics":"","avatar":"https://pbs.twimg.com/profile_images/1737124294478516225/w_I2xpnc_400x400.jpg","fallback":"RC"},"1875272780608106693":{"name":"R-E-A-L-I-T-Y","handle":"mihareality","profile":"https://x.com/mihareality","status":"https://x.com/mihareality/status/1875272780608106693","time":"3 janvier 2025, 20:07","text":"HMPV: China's New Virus Outbreak Explained.\nhttps://t.co/6PJduwHrCb","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/6PJduwHrCb"}],"metrics":"","avatar":"","fallback":"RE"},"1875281303542886893":{"name":"DISASTER X","handle":"DISASTER__X","profile":"https://x.com/DISASTER__X","status":"https://x.com/DISASTER__X/status/1875281303542886893","time":"3 janvier 2025, 20:41","text":"China's new Covid?\n\nhttps://t.co/lIlffGWUmk\n\n#China #HMPV #epidemic","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/lIlffGWUmk"},{"href":"https://x.com/hashtag/China","label":"#China"},{"href":"https://x.com/hashtag/HMPV","label":"#HMPV"},{"href":"https://x.com/hashtag/epidemic","label":"#epidemic"}],"metrics":"","avatar":"https://pbs.twimg.com/profile_images/1874865735203221504/wqS83n-d_400x400.jpg","fallback":"DX"},"1875293369687273981":{"name":"SLY VILLELA","handle":"SFCSly","profile":"https://x.com/SFCSly","status":"https://x.com/SFCSly/status/1875293369687273981","time":"3 janvier 2025, 21:29","text":"HMPV: China's New Virus Outbreak Explained - Newsweek https://t.co/FgGKJpjDhS","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/FgGKJpjDhS"}],"metrics":"","avatar":"","fallback":"SV"},"1875338234370388269":{"name":"Lexxi","handle":"Lexximagic","profile":"https://x.com/Lexximagic","status":"https://x.com/Lexximagic/status/1875338234370388269","time":"4 janvier 2025, 00:27","text":"HMPV: China's New Virus Outbreak\nRates of HMPV are ahead of other flu-like diseases—such as COVID-19, rhinovirus and adenovirus—linked to 6.2 percent of positive respiratory illness tests and 5.4 percent of respiratory-illness hospitalizations in China.\n\nhttps://t.co/iZUyGLrKdg","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/iZUyGLrKdg"}],"metrics":"","avatar":"","fallback":"LE"},"1875342105998193123":{"name":"BARB59 / CANADA 🇺🇦 #FvckTrump #DemCast","handle":"ABrosnikoff","profile":"https://x.com/ABrosnikoff","status":"https://x.com/ABrosnikoff/status/1875342105998193123","time":"4 janvier 2025, 00:42","text":"HMPV: China's new virus outbreak explained https://t.co/cKyY001Gac","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/cKyY001Gac"}],"metrics":"1 j’aime","avatar":"","fallback":"BC"},"1875348508313841742":{"name":"I am what I am! ☮️","handle":"nevermore_007","profile":"https://x.com/nevermore_007","status":"https://x.com/nevermore_007/status/1875348508313841742","time":"4 janvier 2025, 01:08","text":"HMPV: China's new virus outbreak explained https://t.co/XvCANnaywM","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/XvCANnaywM"}],"metrics":"1 j’aime","avatar":"https://pbs.twimg.com/profile_images/1266267087976054784/rFfHLkLB_400x400.jpg","fallback":"IA"},"1875349361582075993":{"name":"ESPERANZAOPPENHEIMER","handle":"EspeOppenheimer","profile":"https://x.com/EspeOppenheimer","status":"https://x.com/EspeOppenheimer/status/1875349361582075993","time":"4 janvier 2025, 01:11","text":"HMPV: China's New Virus Outbreak Explained - Newsweek https://t.co/lQ9gYxp8jd","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/lQ9gYxp8jd"}],"metrics":"1 réponses · 1 republications","avatar":"","fallback":"ES"},"1875350650084548936":{"name":"Kabul khan🇦🇫🇺🇸Voice of Truth, صدای حقیقت","handle":"KabulkhanVxi4f","profile":"https://x.com/KabulkhanVxi4f","status":"https://x.com/KabulkhanVxi4f/status/1875350650084548936","time":"4 janvier 2025, 01:16","text":"News reports and social media posts are warning of a new outbreak of a little-known virus called human metapneumovirus (HMPV) in China, but officials are yet to confirm this. https://t.co/zaJee2l5PS","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/zaJee2l5PS"}],"metrics":"1 réponses","avatar":"","fallback":"KK"},"1875355626366546431":{"name":"Neenz","handle":"NPuricelli","profile":"https://x.com/NPuricelli","status":"https://x.com/NPuricelli/status/1875355626366546431","time":"4 janvier 2025, 01:36","text":"Cool cool cool\n\nHMPV: China's new virus outbreak explained https://t.co/NyVFlbvLnn","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/NyVFlbvLnn"}],"metrics":"","avatar":"","fallback":"NE"},"1875357864589733968":{"name":"Paul Efambe jr","handle":"PaulEfambejr","profile":"https://x.com/PaulEfambejr","status":"https://x.com/PaulEfambejr/status/1875357864589733968","time":"4 janvier 2025, 01:45","text":"HMPV: China's new virus outbreak explained https://t.co/1dpc1VQNUm","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/1dpc1VQNUm"}],"metrics":"","avatar":"https://pbs.twimg.com/profile_images/1507801241258270727/ldJX2fmT_400x400.jpg","fallback":"PE"},"1875399091435532369":{"name":"julie pedley","handle":"pedleyjulie","profile":"https://x.com/pedleyjulie","status":"https://x.com/pedleyjulie/status/1875399091435532369","time":"4 janvier 2025, 04:29","text":"HMPV: China's new virus outbreak explained https://t.co/q44yugYhQV","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/q44yugYhQV"}],"metrics":"","avatar":"","fallback":"JP"},"1875404302673703396":{"name":"Solitaire","handle":"PsycoMott","profile":"https://x.com/PsycoMott","status":"https://x.com/PsycoMott/status/1875404302673703396","time":"4 janvier 2025, 04:50","text":"Anyone hear about a new novel virus in China?\n#HMPV\n\nhttps://t.co/dpYgnKztpx","links":[{"href":"https://x.com/hashtag/HMPV","label":"#HMPV"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/dpYgnKztpx"}],"metrics":"","avatar":"","fallback":"SO"},"1875407975902560539":{"name":"ZONED LAB","handle":"ZOONEDIN","profile":"https://x.com/ZOONEDIN","status":"https://x.com/ZOONEDIN/status/1875407975902560539","time":"4 janvier 2025, 05:04","text":"We all got rich during Covid -19\n\nWe will get rich during this fake #hmpv\n\n$hmpv could be a sender\n\n138mxhGnStDVuPcq3NKWsr75pzdm1g82GYpShfrApump\n\nhttps://t.co/7dPvWcfysE","links":[{"href":"https://x.com/hashtag/hmpv","label":"#hmpv"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/7dPvWcfysE"}],"metrics":"3 réponses · 2 j’aime","avatar":"https://pbs.twimg.com/profile_images/1932086089273028608/Caq34JVC_400x400.jpg","fallback":"ZL"},"1875409188702110016":{"name":"Sunshine Stylinson. YOU WILL MAKE IT BETTER!💜","handle":"lovelovemelou","profile":"https://x.com/lovelovemelou","status":"https://x.com/lovelovemelou/status/1875409188702110016","time":"4 janvier 2025, 05:09","text":"HMPV: China's New Virus Outbreak Explained - Newsweek is the “credible” news source I could locate in reference to the Chinese outbreak panic. Check your sources. Do your own research. Stay safe.  https://t.co/uTaCBl7CTF","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/uTaCBl7CTF"}],"metrics":"1 j’aime","avatar":"","fallback":"SS"},"1875434392035684479":{"name":"Milford Swift","handle":"MilfordSwift","profile":"https://x.com/MilfordSwift","status":"https://x.com/MilfordSwift/status/1875434392035684479","time":"4 janvier 2025, 06:49","text":"HMPV: China's New Virus Outbreak Explained - Newsweek little-known virus called human metapneumovirus (HMPV) in China, just in time for freakin ⁦@realDonaldTrump⁩ to kill us all. Damn! https://t.co/YC8UV55BWQ","links":[{"href":"https://x.com/realDonaldTrump","label":"@realDonaldTrump"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/YC8UV55BWQ"}],"metrics":"","avatar":"https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png","fallback":"MS"},"1875561967097618564":{"name":"cctish (Colleen )","handle":"cctish","profile":"https://x.com/cctish","status":"https://x.com/cctish/status/1875561967097618564","time":"4 janvier 2025, 15:16","text":"HMPV: China's New Virus Outbreak Explained - Newsweek https://t.co/fNVF5cKrjK","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/fNVF5cKrjK"}],"metrics":"","avatar":"","fallback":"CC"},"1875573027259478310":{"name":"Russell Cazier","handle":"RussCazier","profile":"https://x.com/RussCazier","status":"https://x.com/RussCazier/status/1875573027259478310","time":"4 janvier 2025, 16:00","text":"HMPV: China's New Virus Outbreak Explained.\n\nBy Hatty Willmoth\nFood &amp; Nutrition Reporter\nhttps://t.co/FSVbmmbEyA","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/FSVbmmbEyA"}],"metrics":"1 j’aime","avatar":"","fallback":"RC"},"1875586239535128609":{"name":"iio akitoshi","handle":"iioakitoshi","profile":"https://x.com/iioakitoshi","status":"https://x.com/iioakitoshi/status/1875586239535128609","time":"4 janvier 2025, 16:53","text":"HMPV: China's New Virus Outbreak Explained - Newsweek https://t.co/b63hFVY7d8","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/b63hFVY7d8"}],"metrics":"","avatar":"https://pbs.twimg.com/profile_images/501212552773525506/JOIdJyEO_400x400.jpeg","fallback":"IA"},"1875651722372395479":{"name":"Jenn 💫","handle":"Jenna_OrangeCo","profile":"https://x.com/Jenna_OrangeCo","status":"https://x.com/Jenna_OrangeCo/status/1875651722372395479","time":"4 janvier 2025, 21:13","text":"China is facing a new virus outbreak, with HMPV spreading rapidly and causing flu-like and #COVID_19-like symptoms.\nhttps://t.co/Afw0gGK4oh","links":[{"href":"https://x.com/hashtag/COVID_19","label":"#COVID_19"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/Afw0gGK4oh"}],"metrics":"","avatar":"","fallback":"JE"},"1875672212864430271":{"name":"MareenaS","handle":"Mareena716","profile":"https://x.com/Mareena716","status":"https://x.com/Mareena716/status/1875672212864430271","time":"4 janvier 2025, 22:34","text":"HMPV: China's new virus outbreak explained https://t.co/wwc1M70cw4","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/wwc1M70cw4"}],"metrics":"","avatar":"","fallback":"MA"},"1875689766123139562":{"name":"Carlos Guzman Quilo","handle":"GuzmanQCarlos","profile":"https://x.com/GuzmanQCarlos","status":"https://x.com/GuzmanQCarlos/status/1875689766123139562","time":"4 janvier 2025, 23:44","text":"\"HMPV: China's New Virus Outbreak Explained.\"\nhttps://t.co/V7G95U0f4S","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/V7G95U0f4S"}],"metrics":"1 j’aime","avatar":"https://pbs.twimg.com/profile_images/1753102177789251584/TcauuAMf_400x400.jpg","fallback":"CG"},"1875793509694779464":{"name":"Mikasa4231","handle":"mikasa4231","profile":"https://x.com/mikasa4231","status":"https://x.com/mikasa4231/status/1875793509694779464","time":"5 janvier 2025, 06:36","text":"#HMPV : China's New #Virus Outbreak Explained - Newsweek https://t.co/uwOX7WicSd","links":[{"href":"https://x.com/hashtag/HMPV","label":"#HMPV"},{"href":"https://x.com/hashtag/Virus","label":"#Virus"},{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/uwOX7WicSd"}],"metrics":"","avatar":"","fallback":"MI"},"1875803145005363565":{"name":"microBIO","handle":"microBIOblog","profile":"https://x.com/microBIOblog","status":"https://x.com/microBIOblog/status/1875803145005363565","time":"5 janvier 2025, 07:14","text":"HMPV: China's new virus outbreak explained https://t.co/E5BzLtjgwg","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/E5BzLtjgwg"}],"metrics":"5 republications · 8 j’aime","avatar":"https://pbs.twimg.com/profile_images/1675152699/Twitter_400x400.jpg","fallback":"MI"},"1875955322520498454":{"name":"Ana","handle":"AnuskaChester","profile":"https://x.com/AnuskaChester","status":"https://x.com/AnuskaChester/status/1875955322520498454","time":"5 janvier 2025, 17:19","text":"HMPV: China's New Virus Outbreak Explained.  https://t.co/vTNsPTwyDx","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/vTNsPTwyDx"}],"metrics":"1 réponses · 1 republications · 4 j’aime","avatar":"https://pbs.twimg.com/profile_images/1869479989667651584/saoFVMlc_400x400.jpg","fallback":"AN"},"1876092184191255024":{"name":"Russell Cazier","handle":"RussCazier","profile":"https://x.com/RussCazier","status":"https://x.com/RussCazier/status/1876092184191255024","time":"6 janvier 2025, 02:23","text":"HMPV: China's New Virus Outbreak Explained.\n\nBy Hatty Willmoth\nFood &amp; Nutrition Reporter\nhttps://t.co/FSVbmmbEyA","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/FSVbmmbEyA"}],"metrics":"","avatar":"","fallback":"RC"},"1876105956154564752":{"name":"Sushil","handle":"BasthaneBaje","profile":"https://x.com/BasthaneBaje","status":"https://x.com/BasthaneBaje/status/1876105956154564752","time":"6 janvier 2025, 03:18","text":"HMPV: China's New Virus Outbreak Explained - Newsweek https://t.co/naAE0in5d2","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/naAE0in5d2"}],"metrics":"","avatar":"","fallback":"SU"},"1876151371042636047":{"name":"Rachael Thomas","handle":"Rachaelmt72","profile":"https://x.com/Rachaelmt72","status":"https://x.com/Rachaelmt72/status/1876151371042636047","time":"6 janvier 2025, 06:18","text":"HMPV: China's new virus outbreak explained https://t.co/CIZEdL37vU","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/CIZEdL37vU"}],"metrics":"","avatar":"https://pbs.twimg.com/profile_images/737889846472105984/JVfQnudr_400x400.jpg","fallback":"RT"},"1930682768221938082":{"name":"Dragon Queen","handle":"CavalloKrystyn1","profile":"https://x.com/CavalloKrystyn1","status":"https://x.com/CavalloKrystyn1/status/1930682768221938082","time":"5 juin 2025, 17:46","text":"HMPV: China's new virus outbreak explained https://t.co/jpmEX0vJ2h\nGOOGLE search yielded zero\nDuckDuckGo did","links":[{"href":"https://www.newsweek.com/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126","label":"https://t.co/jpmEX0vJ2h"}],"metrics":"","avatar":"","fallback":"DQ"},"1875485955513336286":{"name":"France Résistance","handle":"FranceRsistanc1","profile":"https://x.com/FranceRsistanc1","status":"https://x.com/FranceRsistanc1/status/1875485955513336286","time":"4 janvier 2025, 10:14","text":"🚨ALERTE🚨En Asie, confirmation qu'ils sont en train de refaire le cinéma Covid en Chine sous le nom de HMPV (Human MetaPneumoVirus). Les hôpitaux se rempliraient et certains aéroports fermés ...\n\nLa Chine 🇨🇳 déclare l'état d'urgence☣️⚡️☣️\n\nhttps://t.co/2zFJSaHp6h https://t.co/1Jc5eFhbCW","links":[{"href":"https://www-newsweek-com.translate.goog/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=fr&_x_tr_pto=wapp","label":"https://t.co/2zFJSaHp6h"},{"href":"https://x.com/FranceRsistanc1/status/1875485955513336286","label":"https://t.co/1Jc5eFhbCW"}],"metrics":"2 réponses · 13 republications · 1 citations · 19 j’aime","avatar":"https://pbs.twimg.com/profile_images/1132006660053053442/H8wjtxjO_400x400.png","fallback":"FR"},"1875498530535882775":{"name":"Chris Schmer","handle":"SchmerChris","profile":"https://x.com/SchmerChris","status":"https://x.com/SchmerChris/status/1875498530535882775","time":"4 janvier 2025, 11:04","text":"@YvesPDB Chine, des infos de presse et des publications sur les réseaux sociaux mettent en garde contre une nouvelle épidémie d'un virus apparenté a la grippe aviaire, le matapneumovirus humain (HMPV), les autorités n'ont pas confirmé cette information.https://t.co/XCrrvOJrh5","links":[{"href":"https://x.com/YvesPDB","label":"@YvesPDB"},{"href":"https://www-newsweek-com.translate.goog/human-metapneumovirus-hmpv-china-outbreak-explainer-2009126?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=fr&_x_tr_pto=wapp","label":"https://t.co/XCrrvOJrh5"}],"metrics":"1 republications · 2 j’aime","avatar":"https://pbs.twimg.com/profile_images/1238904607335735296/j9brd89b_400x400.jpg","fallback":"CS"},"1874481684122607783":{"name":"SARS‑CoV‑2 (COVID-19)","handle":"COVID19_disease","profile":"https://x.com/COVID19_disease","status":"https://x.com/COVID19_disease/status/1874481684122607783","time":"1er janvier 2025, 15:43","text":"⚠️ BREAKING:\n\nChina 🇨🇳 Declares State of Emergency as Epidemic Overwhelms Hospitals and Crematoriums.\n\nMultiple viruses, including Influenza A, HMPV, Mycoplasma pneumoniae, and COVID-19, are spreading rapidly across China. https://t.co/GRV3XYgrYX","links":[{"href":"https://x.com/COVID19_disease/status/1874481684122607783","label":"https://t.co/GRV3XYgrYX"}],"metrics":"2 778 réponses · 7 248 republications · 6 036 citations · 14 608 j’aime","avatar":"https://pbs.twimg.com/profile_images/1646861921625468934/n7beUnNP_400x400.jpg","fallback":"SA"},"1879251878426685803":{"name":"⚜️Bernard Fourage ⚜️","handle":"FourageBernard","profile":"https://x.com/FourageBernard","status":"https://x.com/FourageBernard/status/1879251878426685803","time":"14 janvier 2025, 19:38","text":"Non, un confinement lié au virus HMPV n’est pas prévu en France via 20 Minutes https://t.co/BpzXRQfKr9","links":[{"href":"https://www.20minutes.fr/sante/4133486-20250114-non-confinement-lie-virus-hmpv-prevu-france","label":"https://t.co/BpzXRQfKr9"}],"metrics":"","avatar":"https://pbs.twimg.com/profile_images/1093221828628238340/XzUJOc9A_400x400.jpg","fallback":"BE"},"1876645174371078499":{"name":"United Nations Geneva","handle":"UNGeneva","profile":"https://x.com/UNGeneva","status":"https://x.com/UNGeneva/status/1876645174371078499","time":"7 janvier 2025, 15:00","text":"\"Human metapneumovirus #hMPV is NOT a new virus.\n\nFirst identified in 2001, it has been in the human population for a long time. It is a common virus that circulates in winter and spring. It usually causes respiratory symptoms similar to the common cold.\"\n\n- @who https://t.co/zojxwNLgH8","links":[{"href":"https://x.com/hashtag/hMPV","label":"#hMPV"},{"href":"https://x.com/who","label":"@who"},{"href":"https://x.com/UNGeneva/status/1876645174371078499","label":"https://t.co/zojxwNLgH8"}],"metrics":"72 réponses · 282 republications · 37 citations · 495 j’aime","avatar":"https://pbs.twimg.com/profile_images/946007309700026369/irHahUwS_400x400.jpg","fallback":"UN"},"1876585649458811292":{"name":"Dr Diego Mpia Elenge","handle":"arztdiego","profile":"https://x.com/arztdiego","status":"https://x.com/arztdiego/status/1876585649458811292","time":"7 janvier 2025, 11:04","text":"Le virus HMPV qui circule en Chine n’est pas \"un nouveau virus mystérieux\" https://t.co/IgOtPgSx1m","links":[{"href":"https://www.rtbf.be/article/le-virus-hmpv-qui-circule-en-chine-n-est-pas-un-nouveau-virus-mysterieux-11485602","label":"https://t.co/IgOtPgSx1m"}],"metrics":"","avatar":"","fallback":"DD"},"1876516618211397674":{"name":"The Wire","handle":"thewire_in","profile":"https://x.com/thewire_in","status":"https://x.com/thewire_in/status/1876516618211397674","time":"7 janvier 2025, 06:30","text":"Neither New Nor COVID-Like: Why the HMPV Is No Reason for Panic in India\n\nThe WHO clarified to The Wire that it has not received alarming news from China, and there is no evidence of the old HMP virus mutating to cause a large-scale epidemic\n\n@Banjotkaur✍️\nhttps://t.co/K8i2NTsf2v","links":[{"href":"https://x.com/Banjotkaur","label":"@Banjotkaur"},{"href":"https://thewire.in/health/hmpv-virus-cases-india-covid-media-panic","label":"https://t.co/K8i2NTsf2v"}],"metrics":"4 republications · 1 citations · 15 j’aime","avatar":"https://pbs.twimg.com/profile_images/1311598701605912576/fM601Ih5_400x400.jpg","fallback":"TW"},"1875248246047851001":{"name":"Rahul Namboodri","handle":"Lets_Fact","profile":"https://x.com/Lets_Fact","status":"https://x.com/Lets_Fact/status/1875248246047851001","time":"3 janvier 2025, 18:29","text":"Have you heard of Human Metapneumovirus (hMPV)? This respiratory virus causes cold-like symptoms but can lead to severe illness in vulnerable groups like children and the elderly. Learn more about its symptoms and prevention here:\n\nhttps://t.co/6jEFTwGsLI #Health #hmpvvirus","links":[{"href":"https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms/","label":"https://t.co/6jEFTwGsLI"},{"href":"https://x.com/hashtag/Health","label":"#Health"},{"href":"https://x.com/hashtag/hmpvvirus","label":"#hmpvvirus"}],"metrics":"","avatar":"","fallback":"LE"},"1875432320364425380":{"name":"Fact Crescendo","handle":"FactCrescendo","profile":"https://x.com/FactCrescendo","status":"https://x.com/FactCrescendo/status/1875432320364425380","time":"4 janvier 2025, 06:41","text":"🚨 China is again making headlines amid speculations about a potential Human Metapneumovirus (HMPV) outbreak, similar to the early days of the #COVID19 pandemic.\n\nRead the #Explainer to know the symptoms, treatments, and precautions to take. #HMPV\n\nhttps://t.co/xupO7jPp9X","links":[{"href":"https://x.com/hashtag/COVID19","label":"#COVID19"},{"href":"https://x.com/hashtag/Explainer","label":"#Explainer"},{"href":"https://x.com/hashtag/HMPV","label":"#HMPV"},{"href":"https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms","label":"https://t.co/xupO7jPp9X"}],"metrics":"2 j’aime","avatar":"","fallback":"FA"},"1875132118021681211":{"name":"Nabila Jamal","handle":"nabilajamal_","profile":"https://x.com/nabilajamal_","status":"https://x.com/nabilajamal_/status/1875132118021681211","time":"3 janvier 2025, 10:48","text":"China's Hospitals Overwhelmed Amid HMPV Outbreak\n\nHospitals in China are reportedly struggling with a surge in Human Metapneumovirus (HMPV) cases, alongside Influenza A &amp; Mycoplasma pneumoniae infections. Viral videos show overcrowded facilities, drawing comparisons to early https://t.co/iP8v3SHsbn","links":[{"href":"https://x.com/nabilajamal_/status/1875132118021681211/video/1","label":"https://t.co/iP8v3SHsbn"}],"metrics":"69 réponses · 124 republications · 34 citations · 459 j’aime","avatar":"","fallback":"NA"},"1875894349533523991":{"name":"AfricasNow","handle":"AfricasNow24","profile":"https://x.com/AfricasNow24","status":"https://x.com/AfricasNow24/status/1875894349533523991","time":"5 janvier 2025, 13:17","text":"HMPV: Covid-Like Disease Ravaging China - Here Is What We Know\n#Lockdown #Pandemic #NewsToday\n\nhttps://t.co/Vn7B33zTBY https://t.co/Y82ak5CWbD","links":[{"href":"https://x.com/hashtag/Lockdown","label":"#Lockdown"},{"href":"https://x.com/hashtag/Pandemic","label":"#Pandemic"},{"href":"https://x.com/hashtag/NewsToday","label":"#NewsToday"},{"href":"https://africasnow.com/2025/01/05/hmpv-covid-like-disease-ravaging-china-here-is-what-we-know/","label":"https://t.co/Vn7B33zTBY"},{"href":"https://x.com/AfricasNow24/status/1875894349533523991/photo/1","label":"https://t.co/Y82ak5CWbD"}],"metrics":"","avatar":"","fallback":"AF"},"1875222668980723816":{"name":"SARS‑CoV‑2 (COVID-19)","handle":"COVID19_disease","profile":"https://x.com/COVID19_disease","status":"https://x.com/COVID19_disease/status/1875222668980723816","time":"3 janvier 2025, 16:48","text":"⚠️ BREAKING:\n\nChina’s 🇨🇳 Metapneumovirus Outbreak Continues to Surge, Hospitals Overwhelmed as Children Are Infected.\n\nChina is grappling with a human metapneumovirus (HMPV) outbreak, with children and the elderly most affected. https://t.co/yok6Ot5Bag","links":[{"href":"https://x.com/COVID19_disease/status/1875222668980723816/video/1","label":"https://t.co/yok6Ot5Bag"}],"metrics":"159 réponses · 1020 republications · 253 citations · 1881 j’aime","avatar":"https://pbs.twimg.com/profile_images/1646861921625468934/n7beUnNP_400x400.jpg","fallback":"CO"},"1877719993388765205":{"name":"Bournemouth Echo","handle":"Bournemouthecho","profile":"https://x.com/Bournemouthecho","status":"https://x.com/Bournemouthecho/status/1877719993388765205","time":"10 janvier 2025, 14:11","text":"What is HMPV and should we be worried about it? Plus symptoms and how it spreads https://t.co/TOzcUnwlno","links":[{"href":"https://www.bournemouthecho.co.uk/news/national/uk-today/24847965.hmpv-worried-uk/?ref=rss","label":"https://t.co/TOzcUnwlno"}],"metrics":"2 réponses · 1 republication · 1 citation","avatar":"https://pbs.twimg.com/profile_images/1572127020372426752/dGVJotgj_400x400.jpg","fallback":"BO"},"1877771240443621817":{"name":"King Dayo","handle":"OlaAhmedDayo","profile":"https://x.com/OlaAhmedDayo","status":"https://x.com/OlaAhmedDayo/status/1877771240443621817","time":"10 janvier 2025, 17:35","text":"RT @Bournemouthecho: What is HMPV and should we be worried about it? Plus symptoms and how it spreads https://t.co/TOzcUnwlno","links":[{"href":"https://www.bournemouthecho.co.uk/news/national/uk-today/24847965.hmpv-worried-uk/?ref=rss","label":"https://t.co/TOzcUnwlno"}],"metrics":"1 republication","avatar":"https://pbs.twimg.com/profile_images/1992195194045726720/WoFNBe0l_400x400.jpg","fallback":"OL"},"1876715280224702652":{"name":"World Health Organization (WHO)","handle":"WHO","profile":"https://x.com/WHO","status":"https://x.com/WHO/status/1876715280224702652","time":"7 janvier 2025, 19:39","text":"Read the latest Disease Outbreak News: Trends of acute respiratory infection, including human metapneumovirus, in the Northern Hemisphere.\n🔗https://t.co/ru8KvpfHDG https://t.co/1VBsaZMYax","links":[{"href":"https://www.who.int/emergencies/disease-outbreak-news/item/2025-DON550","label":"https://t.co/ru8KvpfHDG"},{"href":"https://x.com/WHO/status/1876715280224702652/photo/1","label":"https://t.co/1VBsaZMYax"}],"metrics":"112 réponses · 240 republications · 33 citations · 358 j’aime","avatar":"https://pbs.twimg.com/profile_images/1572512818796335105/YF_H68EL_400x400.jpg","fallback":"WH"},"1875288103243673992":{"name":"Alice (e/nya)🐈‍⬛","handle":"Alice_comfy","profile":"https://x.com/Alice_comfy","status":"https://x.com/Alice_comfy/status/1875288103243673992","time":"3 janvier 2025, 21:08","text":"General speaking endemic viruses that cause the common cold are not referred to as a \"new virus outbreak\".\n\nIf you are old enough to read this you have had HMPV before. https://t.co/PLGystPLts","links":[{"href":"https://x.com/BRICSinfo/status/1875271122398376216","label":"https://t.co/PLGystPLts"}],"metrics":"1 réponse · 1 republication · 22 j’aime","avatar":"https://pbs.twimg.com/profile_images/1688222819287797762/O5H3AL-w_400x400.jpg","fallback":"AL"},"1875410960288247979":{"name":"DBS Morocco","handle":"dbsmorocco","profile":"https://x.com/dbsmorocco","status":"https://x.com/dbsmorocco/status/1875410960288247979","time":"4 janvier 2025, 05:16","text":"Again???\n🚨New virus alert in China: Human Metapneumovirus (HMPV) is causing a surge in cases with flu-like and COVID-19-like symptoms. Hospitals are overwhelmed, and there's no vaccine yet. #HMPV #ChinaVirus https://t.co/LIYnMIGapE","links":[{"href":"https://x.com/hashtag/HMPV","label":"#HMPV"},{"href":"https://x.com/hashtag/ChinaVirus","label":"#ChinaVirus"},{"href":"https://x.com/BRICSinfo/status/1875271122398376216","label":"https://t.co/LIYnMIGapE"}],"metrics":"2 réponses · 1 republication · 5 j’aime","avatar":"https://pbs.twimg.com/profile_images/1961316983896428544/oJfVcjhf_400x400.jpg","fallback":"DB"},"1875272624839987510":{"name":"Aaron Johnson","handle":"johnson_aaronr","profile":"https://x.com/johnson_aaronr","status":"https://x.com/johnson_aaronr/status/1875272624839987510","time":"3 janvier 2025, 20:06","text":"HMPV will be the next planned reason to shut down.\nBookmark it. https://t.co/sBuWb7T6Vr","links":[{"href":"https://x.com/BRICSinfo/status/1875271122398376216","label":"https://t.co/sBuWb7T6Vr"}],"metrics":"1 republication · 1 citation · 3 j’aime","avatar":"","fallback":"JO"},"1875271122398376216":{"name":"BRICS News","handle":"BRICSinfo","profile":"https://x.com/BRICSinfo","status":"https://x.com/BRICSinfo/status/1875271122398376216","time":"3 janvier 2025, 20:00","text":"JUST IN: 🇨🇳 China is facing a new virus outbreak with the Human Metapneumovirus (HMPV) spreading rapidly, causing flu-like and COVID-19-like symptoms. https://t.co/i63Q0EIX2r","links":[{"href":"https://x.com/BRICSinfo/status/1875271122398376216/photo/1","label":"https://t.co/i63Q0EIX2r"}],"metrics":"3640 réponses · 6123 republications · 9249 citations · 28484 j’aime","avatar":"https://pbs.twimg.com/profile_images/1926359090973818880/Fp80oxwf_400x400.jpg","fallback":"BR"}},"newsweekOthers":["1875179022096978123","1875235096216682787","1875237623217975728","1875237666901651526","1875250250547347820","1875270321970016609","1875272780608106693","1875281303542886893","1875293369687273981","1875338234370388269","1875342105998193123","1875348508313841742","1875349361582075993","1875350650084548936","1875355626366546431","1875357864589733968","1875399091435532369","1875404302673703396","1875407975902560539","1875409188702110016","1875434392035684479","1875561967097618564","1875573027259478310","1875586239535128609","1875651722372395479","1875672212864430271","1875689766123139562","1875793509694779464","1875803145005363565","1875955322520498454","1876092184191255024","1876105956154564752","1876151371042636047","1930682768221938082"],"pages":[{"domain":"livemint.com","href":"https://www.livemint.com/science/health/human-metapneumovirus-in-china-alarming-hospital-videos-spark-concerns-over-mysterious-hmpv-should-india-be-worried-11735879646738.html","title":"HMPV Outbreak in China: Viral Video shows chaos at hospital over mysterious virus; should India be worried? | Mint","citers":5,"statuses":1},{"domain":"businessinsider.com","href":"https://www.businessinsider.com/why-human-metapneumovirus-hmpv-not-new-covid-lockdown-pandemic-2025-1","title":"Why Human Metapneumovirus, or HMPV, Is Not the New COVID-19 - Business Insider","citers":3,"statuses":1},{"domain":"english.factcrescendo.com","href":"https://english.factcrescendo.com/2025/01/03/what-is-human-metapneumovirus-hmpv-and-its-symptoms","title":"Human Metapneumovirus (HMPV): Covid-19 like Health Crisis Speculations in China |","citers":2,"statuses":2},{"domain":"africasnow.com","href":"https://africasnow.com/2025/01/05/hmpv-covid-like-disease-ravaging-china-here-is-what-we-know/","title":"HMPV: Covid-Like Disease Ravaging China - Here Is What We Know - AfricasNow","citers":1,"statuses":2},{"domain":"citizenwatchreport.com","href":"https://citizenwatchreport.com/medias-pushing-human-metapneumovirus-outbreak-from-china/","title":"Medias pushing Human Metapneumovirus outbreak from China – Citizen Watch Report","citers":1,"statuses":3},{"domain":"earthlings1997.com","href":"https://earthlings1997.com/china-declares-state-of-emergency-over-hmpv/","title":"China Declares State of Emergency Over HMPV Virus Outbreak - Earthlings 1997","citers":1,"statuses":1},{"domain":"gatewayhispanic.com","href":"https://gatewayhispanic.com/2025/01/china-declares-state-of-emergency-amid-alleged-epidemic-of-multiple-respiratory-viruses-social-media-users-and-outlets-share-videos/","title":"China Declares State of Emergency Amid Alleged Epidemic of Multiple Respiratory Viruses?; Social Media Users and Outlets share Videos | Gateway Hispanic | by Joana Campos","citers":1,"statuses":1},{"domain":"lokmattimes.com","href":"https://www.lokmattimes.com/international/human-metapneumovirus-outbreak-in-china-hospitals-and-crematoriums-struggle-amid-rapid-viral-spread-all-you-need-to-know-about-hmpv-a505/","title":"Human Metapneumovirus Outbreak in China: Hospitals and Crematoriums Struggle Amid Rapid Viral Spread; All You Need to Know About HMPV Virus - www.lokmattimes.com","citers":1,"statuses":1},{"domain":"munsifdaily.com","href":"https://munsifdaily.com/is-the-new-virus-from-china-dangerous/","title":"Is the New Virus from China Dangerous for Children and Elders? Key Symptoms Indians Must Watch Out For","citers":1,"statuses":2},{"domain":"news24online.com","href":"https://news24online.com/world/after-covid-a-new-epidemic-grips-china-hospitals-flooded-crematories-swamped-all-about-hmpv-virus-affecting-children-and-elderly/428861/","title":"After COVID, A New Epidemic Grips China: Hospitals Flooded, Crematories Swamped- All About HMPV Virus Affecting Children And Elderly!","citers":1,"statuses":1},{"domain":"newsarenaindia.com","href":"https://newsarenaindia.com/international/years-after-covid-19-china-faces-hmpv-virus-outbreak/32569","title":"Years after COVID-19, China faces HMPV virus outbreak","citers":1,"statuses":1},{"domain":"rightspeak.net","href":"http://www.rightspeak.net/2025/01/hmpv-outbreak-in-china-sparks-covid-19.html?spref=tw","title":"RIGHT SPEAK: HMPV Outbreak In China Sparks COVID-19 Déjà Vu: All About Symptoms, Treatments And Prevention; What is HMPV? China Steps Up Emergency Measures Amid New Virus Outbreak,","citers":1,"statuses":1},{"domain":"rks.news","href":"https://rks.news/china-what-is-hmpv-that-is-filling-hospitals-its-symptoms-who-are-at-higher-risk-and-the-preventive-measures-to-take/","title":"China: What is HMPV that is filling hospitals, its symptoms, who are at higher risk, and the preventive measures to take - Rks News","citers":1,"statuses":1},{"domain":"telanganatoday.com","href":"https://telanganatoday.com/china-declares-state-of-emergency-on-new-virus-hmpv-outbreak","title":"China declares State of Emergency on new virus HMPV outbreak - Telangana Today","citers":1,"statuses":1},{"domain":"thegatewaypundit.com","href":"https://www.thegatewaypundit.com/2025/01/respiratory-virus-allegedly-overwhelming-chinese-hospitals-is-nothing/","title":"‘Respiratory Virus’ Allegedly Overwhelming Chinese Hospitals is Nothing More Than a Common Cold * The Gateway Pundit * by Ben Kew","citers":1,"statuses":2},{"domain":"therealvoice.co","href":"https://therealvoice.co/explained-human-metapneumovirus-hmpv-chinas-growing-health-crisis/","title":"Explained: Human Metapneumovirus (HMPV) & China’s Growing Health Crisis - The Real Voice","citers":1,"statuses":1},{"domain":"timesnownews.com","href":"https://www.timesnownews.com/health/china-faces-another-covid-like-pandemic-all-you-need-to-know-about-hmpv-virus-article-116903091","title":"China Faces Another Covid-like Pandemic: All You Need To Know About HMPV Virus | Times Now","citers":1,"statuses":1},{"domain":"timesnownews.com","href":"https://www.timesnownews.com/world/asia/has-china-declared-state-of-emergency-over-covid-and-hmpv-virus-outbreaks-what-we-know-article-116867921","title":"Has China Declared State Of Emergency Over Virus Outbreaks? What We Know | Times Now","citers":1,"statuses":2},{"domain":"yahoo.com","href":"https://www.yahoo.com/news/respiratory-virus-spreading-china-heres-175935949.html","title":"A respiratory virus is spreading in China. Here's why it's not the new COVID-19.","citers":1,"statuses":1}]}</script>
+  <script>
+    const DATA = JSON.parse(document.getElementById("boot").textContent);
+    const GEO = { w: [250, 220, 270], gutter: 52, pad: 16 };
+    const FACES = {
+      "c-fi": "franceinfo", "c-nw": "Newsweek", "c-fr": "FranceRsistanc1", "c-sch": "SchmerChris",
+      "c-lets": "Lets_Fact", "c-fc": "FactCrescendo", "c-af": "AfricasNow24", "c-four": "FourageBernard",
+      "c-bm": "Bournemouthecho", "c-ola": "OlaAhmedDayo", "c-arz": "arztdiego",
+      "s-c1": "COVID19_disease", "s-c3": "COVID19_disease", "s-nab": "nabilajamal_",
+      "s-un": "UNGeneva", "s-who": "WHO", "s-wire": "thewire_in", "s-br": "BRICSinfo", "s-br6": "BRICSinfo"
+    };
+    const COVID = "https://x.com/COVID19_disease/status/1874481684122607783";
+    const DETAIL = {
+      "english.factcrescendo.com": { href: "#rel-fact", nodes: "site-fact s-c1 s-nab c-lets c-fc" },
+      "africasnow.com": { href: "#rel-africa", nodes: "site-af s-c1 s-c3 c-af" }
+    };
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const state = { filter: "all", q: "", expand: false, selected: null, goto: "" };
+    let laidOut = [];
+    let refocus = false;
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+    function displayLink(link) {
+      const label = link.label || "";
+      if (label.startsWith("#") || label.startsWith("@")) return label;
+      try {
+        const u = new URL(link.href);
+        const host = u.hostname.replace(/^www\./, "");
+        if (host === "x.com" || host === "twitter.com") {
+          if (u.pathname.includes("/photo/")) return "image";
+          if (u.pathname.includes("/video/")) return "vidéo";
+          if (u.pathname.includes("/status/")) return "statut sur X";
+          if (u.pathname.includes("/hashtag/")) return label;
+        }
+        return host;
+      } catch (err) {
+        return label;
+      }
+    }
+
+    function linkify(t) {
+      const links = t.links.slice().sort((a, b) => b.label.length - a.label.length);
+      let html = escapeHtml(t.text);
+      links.forEach((link) => {
+        if (!link.label) return;
+        const token = escapeHtml(link.label);
+        const a = '<a href="' + escapeAttr(link.href) + '" title="' + escapeAttr(link.href) + '" target="_blank" rel="noopener">' + escapeHtml(displayLink(link)) + "</a>";
+        html = html.replace(token, a);
+      });
+      return html.replace(/\n/g, "<br>");
+    }
+
+    function remoteFace(handle) {
+      return "https://unavatar.io/x/" + encodeURIComponent(handle);
+    }
+    function storedFace(avatar) {
+      if (!avatar || avatar.indexOf("default_profile") !== -1) return "";
+      return avatar;
+    }
+    function faceRecord(handle) {
+      const t = Object.values(DATA.tweets).find((x) => x.handle === handle);
+      return {
+        stored: t ? storedFace(t.avatar) : "",
+        fallback: (t && t.fallback) || handle.slice(0, 2).toUpperCase()
+      };
+    }
+
+    function tweetEl(t, badge, compact) {
+      const art = document.createElement("article");
+      art.className = "tweet" + (compact ? " compact" : "");
+      const av = document.createElement("a");
+      av.className = "avatar";
+      av.href = t.profile;
+      av.target = "_blank";
+      av.rel = "noopener";
+      av.tabIndex = -1;
+      av.setAttribute("aria-hidden", "true");
+      const img = document.createElement("img");
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      const stored = storedFace(t.avatar);
+      let step = stored ? 0 : 1;
+      img.addEventListener("error", () => {
+        if (step === 0) {
+          step = 1;
+          img.src = remoteFace(t.handle);
+          return;
+        }
+        img.remove();
+      });
+      img.src = stored || remoteFace(t.handle);
+      av.append(img);
+      const fb = document.createElement("span");
+      fb.className = "fallback";
+      fb.textContent = t.fallback || (t.handle || "?").slice(0, 2).toUpperCase();
+      av.append(fb);
+      const body = document.createElement("div");
+      const head = document.createElement("header");
+      head.className = "tweet-head";
+      const name = document.createElement("a");
+      name.className = "name";
+      name.href = t.profile;
+      name.target = "_blank";
+      name.rel = "noopener";
+      name.textContent = t.name;
+      const handle = document.createElement("a");
+      handle.className = "handle";
+      handle.href = t.profile;
+      handle.target = "_blank";
+      handle.rel = "noopener";
+      handle.textContent = "@" + t.handle;
+      const time = document.createElement("a");
+      time.className = "time";
+      time.href = t.status;
+      time.target = "_blank";
+      time.rel = "noopener";
+      time.textContent = t.time;
+      head.append(name, handle, time);
+      if (badge) {
+        const b = document.createElement("span");
+        b.className = "badge";
+        b.textContent = badge;
+        head.append(b);
+      }
+      const text = document.createElement("p");
+      text.className = "text";
+      text.innerHTML = linkify(t);
+      body.append(head, text);
+      if (t.metrics) {
+        const m = document.createElement("p");
+        m.className = "metrics";
+        m.textContent = t.metrics;
+        body.append(m);
+      }
+      art.append(av, body);
+      return art;
+    }
+
+    function hydrate() {
+      document.querySelectorAll("[data-tweet]").forEach((slot) => {
+        const t = DATA.tweets[slot.dataset.tweet];
+        slot.replaceChildren();
+        if (!t) {
+          slot.textContent = "Publication introuvable " + slot.dataset.tweet;
+          return;
+        }
+        slot.append(tweetEl(t, slot.dataset.badge || "", slot.dataset.compact === "1"));
+      });
+      const list = document.getElementById("newsweek-more");
+      DATA.newsweekOthers.forEach((id) => {
+        const t = DATA.tweets[id];
+        if (t) list.append(tweetEl(t, "", true));
+      });
+      const last = DATA.tweets[DATA.newsweekOthers[DATA.newsweekOthers.length - 1]];
+      document.getElementById("newsweek-sum").textContent =
+        DATA.newsweekOthers.length + " autres publications originales du corpus anglais, jusqu’au " + (last ? last.time : "") + ".";
+      renderPages();
+    }
+
+    function pageTags(p) {
+      const tags = ["fan"];
+      if (p.citers >= 3) tags.push("crowd");
+      if (p.statuses >= 2) tags.push("multi");
+      return tags;
+    }
+
+    function renderPages() {
+      const root = document.getElementById("page-rows");
+      DATA.pages.forEach((p, i) => {
+        const detail = DETAIL[p.domain] || null;
+        const row = document.createElement("article");
+        row.className = "mini";
+        row.id = "row-" + i;
+        row.dataset.tags = pageTags(p).join(" ");
+        row.dataset.citers = String(p.citers);
+        row.dataset.statuses = String(p.statuses);
+        row.dataset.nodes = detail ? detail.nodes : ("page-" + i + " s-c1");
+        const cite = document.createElement("div");
+        cite.className = "mini-cite";
+        const strong = document.createElement("strong");
+        strong.textContent = String(p.citers);
+        const span = document.createElement("span");
+        span.textContent = p.citers > 1 ? "publications du corpus citent la page" : "publication du corpus cite la page";
+        cite.append(strong, span);
+        const arr1 = arrow("cite", "cite");
+        const site = document.createElement("div");
+        site.className = "mini-site";
+        const domain = document.createElement("p");
+        domain.className = "domain";
+        domain.textContent = p.domain;
+        const title = document.createElement("a");
+        title.className = "title clamp";
+        title.href = p.href;
+        title.target = "_blank";
+        title.rel = "noopener";
+        title.textContent = p.title;
+        const det = document.createElement("details");
+        det.className = "addr";
+        const sum = document.createElement("summary");
+        sum.textContent = "Adresse";
+        const full = document.createElement("a");
+        full.className = "precise";
+        full.href = p.href;
+        full.target = "_blank";
+        full.rel = "noopener";
+        full.textContent = p.href;
+        det.append(sum, full);
+        site.append(domain, title, det);
+        const arr2 = arrow("embed", "reprend");
+        const status = document.createElement("div");
+        status.className = "mini-status";
+        const st = document.createElement("a");
+        st.href = COVID;
+        st.target = "_blank";
+        st.rel = "noopener";
+        st.textContent = "@COVID19_disease";
+        const when = document.createElement("span");
+        when.textContent = "1er janvier 2025";
+        status.append(st, document.createElement("br"), when);
+        const extra = document.createElement("p");
+        extra.className = "extra";
+        if (detail) {
+          const a = document.createElement("a");
+          a.href = detail.href;
+          a.textContent = "Les statuts repris sont ouverts plus bas";
+          extra.append(a);
+        } else if (p.statuses > 1) {
+          const n = p.statuses - 1;
+          extra.textContent = "+ " + n + (n > 1 ? " autres statuts" : " autre statut") + " du corpus, non détaillé" + (n > 1 ? "s" : "") + " ici";
+        }
+        if (extra.textContent || extra.childNodes.length) status.append(extra);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "textbtn";
+        btn.dataset.select = detail ? (p.domain.indexOf("factcrescendo") >= 0 ? "site-fact" : "site-af") : ("page-" + i);
+        btn.textContent = "Voir dans le réseau";
+        status.append(btn);
+        row.append(cite, arr1, site, arr2, status);
+        root.append(row);
+      });
+    }
+
+    function arrow(kind, label) {
+      const d = document.createElement("div");
+      d.className = "arr " + kind;
+      d.setAttribute("aria-hidden", "true");
+      const i = document.createElement("i");
+      const b = document.createElement("b");
+      b.textContent = label;
+      d.append(i, b);
+      return d;
+    }
+
+    function N(partial) {
+      return Object.assign({ search: "", group17: false, onlyExpand: false, anchor: "", band: 0, count: 0 }, partial);
+    }
+
+    function model() {
+      const nodes = [];
+      const edges = [];
+      const addN = (n) => nodes.push(N(n));
+      const addE = (e) => edges.push(e);
+      const handles = DATA.newsweekOthers.map((id) => {
+        const t = DATA.tweets[id];
+        return t ? (t.handle + " " + t.name) : "";
+      }).join(" ");
+
+      addN({ id: "c-fi", col: 0, kind: "citer", anchor: "site-fi", band: 0, title: "@franceinfo", sub: "son article · 8 jan 2025", goto: "rel-franceinfo",
+        blurb: "franceinfo.fr relie le tweet de @franceinfo (8 janvier 2025) au statut de @COVID19_disease (1er janvier). Le compte cite son propre article. L’article cite le statut dans son corps. Le lien court du tweet est l.francetvinfo.fr/Fgh.",
+        search: "franceinfo" });
+      addN({ id: "c-nw", col: 0, kind: "citer", anchor: "site-nw", band: 0, title: "@Newsweek", sub: "son article · 3 jan 2025", goto: "rel-newsweek",
+        blurb: "Le tweet de @Newsweek cite newsweek.com. La page embarque le statut du 1er janvier de @COVID19_disease.",
+        search: "Newsweek" });
+      addN({ id: "c-34", col: 0, kind: "citer", anchor: "site-nw", band: 1, title: "34 autres publications", sub: "corpus anglais · originales", goto: "rel-newsweek",
+        blurb: "34 autres publications originales du corpus anglais citent la même page de Newsweek. Avec le tweet de @Newsweek, 35 publications originales. 102 publications en comptant les retweets.",
+        search: handles });
+      addN({ id: "c-fr", col: 0, kind: "citer", anchor: "site-tr", band: 0, title: "@FranceRsistanc1", sub: "autre compte · 4 jan 2025", goto: "rel-tr",
+        blurb: "@FranceRsistanc1 cite la traduction Google de l’article de Newsweek, pas newsweek.com. La page reprend le même statut.",
+        search: "FranceRsistanc1 France Résistance" });
+      addN({ id: "c-sch", col: 0, kind: "citer", anchor: "site-tr", band: 1, title: "@SchmerChris", sub: "autre compte · 4 jan 2025", goto: "rel-tr",
+        blurb: "@SchmerChris cite la même adresse traduite. La page reprend le statut du 1er janvier de @COVID19_disease.",
+        search: "SchmerChris Chris Schmer" });
+      addN({ id: "c-lets", col: 0, kind: "citer", anchor: "site-fact", band: 0, title: "@Lets_Fact", sub: "autre compte · 3 jan 2025", goto: "rel-fact",
+        blurb: "@Lets_Fact cite english.factcrescendo.com. La page reprend @COVID19_disease et @nabilajamal_.",
+        search: "Lets_Fact Rahul Namboodri" });
+      addN({ id: "c-fc", col: 0, kind: "citer", anchor: "site-fact", band: 1, title: "@FactCrescendo", sub: "compte du média · 4 jan", goto: "rel-fact",
+        blurb: "@FactCrescendo cite son article, qui reprend deux statuts du corpus.",
+        search: "FactCrescendo" });
+      addN({ id: "c-af", col: 0, kind: "citer", anchor: "site-af", band: 0, title: "@AfricasNow24", sub: "son article · 5 jan 2025", goto: "rel-africa",
+        blurb: "@AfricasNow24 cite africasnow.com. La page reprend deux statuts de @COVID19_disease, le 1er et le 3 janvier.",
+        search: "AfricasNow24 AfricasNow" });
+      addN({ id: "c-four", col: 0, kind: "citer", anchor: "site-20", band: 0, title: "@FourageBernard", sub: "corpus français · 14 jan", goto: "onu",
+        blurb: "@FourageBernard, publication du corpus français, cite 20minutes.fr. L’article embarque @UNGeneva.",
+        search: "FourageBernard 20 minutes" });
+      addN({ id: "c-bm", col: 0, kind: "citer", anchor: "site-echo", band: 0, title: "@Bournemouthecho", sub: "son article · 10 jan 2025", goto: "rel-echo",
+        blurb: "@Bournemouthecho cite ift.tt/BFjCMDJ, qui ouvre l’article. L’article reprend @UNGeneva et @WHO.",
+        search: "Bournemouthecho Bournemouth" });
+      addN({ id: "c-ola", col: 0, kind: "citer", anchor: "site-echo", band: 1, title: "@OlaAhmedDayo", sub: "republication · 10 jan", goto: "rel-echo",
+        blurb: "Republication du tweet de @Bournemouthecho. Le lien ouvre le même article.",
+        search: "OlaAhmedDayo" });
+      addN({ id: "c-arz", col: 0, kind: "citer", anchor: "site-rtbf", band: 0, title: "@arztdiego", sub: "autre compte · 7 jan 2025", goto: "rtbf",
+        blurb: "@arztdiego cite rtbf.be. L’article embarque @thewire_in. Les deux datent du 7 janvier.",
+        search: "arztdiego RTBF thewire" });
+      addN({ id: "c-q", col: 0, kind: "citer", anchor: "site-q", band: 0, title: "17 publications", sub: "corpus français · originales", goto: "qactus",
+        blurb: "17 publications originales du corpus français citent qactus.fr. La page ne reprend aucun statut des deux corpus.",
+        search: "qactus" });
+      addN({ id: "c-b49", col: 0, kind: "citer", anchor: "gap-brics", band: 0, title: "49 publications", sub: "originales · 3 jan 2025", goto: "direct",
+        blurb: "49 publications originales citent l’adresse du statut de @BRICSinfo du 3 janvier. Aucune des 145 pages lues ne l’embarque.",
+        search: "BRICSinfo Alice_comfy dbsmorocco johnson_aaronr" });
+      addN({ id: "c-b11", col: 0, kind: "citer", anchor: "gap-brics6", band: 0, title: "11 publications", sub: "originales · 6 jan 2025", goto: "direct",
+        blurb: "11 publications originales citent le statut de @BRICSinfo du 6 janvier, par son adresse, sans page entre les deux.",
+        search: "BRICSinfo 1876127350594957707" });
+      addN({ id: "c-c41", col: 0, kind: "citer", anchor: "gap-covid", band: 0, title: "41 publications", sub: "originales · adresse du statut", goto: "direct",
+        blurb: "41 publications originales citent l’adresse du statut du 1er janvier de @COVID19_disease, en plus des 22 pages qui l’intègrent.",
+        search: "COVID19_disease direct" });
+
+      addN({ id: "site-fi", col: 1, kind: "site", band: 0, title: "franceinfo.fr", sub: "cite le statut dans le corps", goto: "rel-franceinfo", count: 1,
+        blurb: "franceinfo.fr est l’intermédiaire. @franceinfo cite l’article. L’article cite dans son corps le statut du 1er janvier de @COVID19_disease. Lien court du tweet : l.francetvinfo.fr/Fgh.",
+        search: "franceinfo.fr franceinfo" });
+      addN({ id: "site-nw", col: 1, kind: "site", band: 1, title: "newsweek.com", sub: "35 originales · 102 avec RT", goto: "rel-newsweek", count: 35,
+        blurb: "newsweek.com est l’intermédiaire. Le tweet de @Newsweek et 34 autres publications originales du corpus anglais citent la page. L’article embarque le statut. 102 publications en comptant les retweets.",
+        search: "newsweek.com " + handles });
+      addN({ id: "site-tr", col: 1, kind: "site", band: 2, title: "Newsweek traduit", sub: "même article, autre adresse", goto: "rel-tr", count: 2,
+        blurb: "La version Google Traduction du même article relie @FranceRsistanc1 et @SchmerChris au même statut. Ce n’est pas l’adresse newsweek.com.",
+        search: "translate.goog Newsweek FranceRsistanc1 SchmerChris" });
+      addN({ id: "site-g17", col: 1, kind: "site", band: 3, group17: true, title: "17 autres pages", sub: "reprennent le même statut", goto: "autres", count: 17,
+        blurb: "Ces 17 pages font partie des 22 qui reprennent le statut du 1er janvier. Franceinfo, Newsweek, la traduction, Fact Crescendo et AfricasNow sont des nœuds à part. Ici, seul l’effectif de publications est connu : Livemint 5, Business Insider 3, les autres 1. Dépliez les domaines pour les voir une par une.",
+        search: DATA.pages.filter((p) => !DETAIL[p.domain]).map((p) => p.domain + " " + p.title).join(" ") });
+
+      DATA.pages.forEach((p, i) => {
+        if (DETAIL[p.domain]) return;
+        const id = "page-" + i;
+        const tagsNote = p.statuses > 1 ? (p.statuses + " statuts dans la page") : "1 statut";
+        addN({ id: id, col: 1, kind: "site", band: 3 + (i + 1) / 100, onlyExpand: true, title: p.domain, sub: p.citers + (p.citers > 1 ? " publications · " : " publication · ") + tagsNote, goto: "row-" + i, count: p.citers,
+          blurb: p.domain + " reprend le statut du 1er janvier de @COVID19_disease. " + p.citers + (p.citers > 1 ? " publications du corpus citent cette page. " : " publication du corpus cite cette page. ") + (p.statuses > 1 ? "La page contient " + p.statuses + " statuts du corpus. Les autres ne sont pas détaillés ici." : "Un seul statut du corpus est indiqué dans la page."),
+          search: p.domain + " " + p.title });
+        const tags = pageTags(p);
+        addE({ from: id, to: "s-c1", kind: "embed", verb: "reprend le statut", tags: tags, count: p.citers });
+      });
+
+      addN({ id: "site-fact", col: 1, kind: "site", band: 4, title: "factcrescendo.com", sub: "2 statuts du corpus", goto: "rel-fact", count: 2,
+        blurb: "english.factcrescendo.com relie @Lets_Fact et @FactCrescendo à @COVID19_disease (1er janvier) et à @nabilajamal_ (3 janvier).",
+        search: "factcrescendo Lets_Fact nabilajamal" });
+      addN({ id: "site-af", col: 1, kind: "site", band: 5, title: "africasnow.com", sub: "2 statuts, un compte", goto: "rel-africa", count: 1,
+        blurb: "africasnow.com relie @AfricasNow24 à deux statuts de @COVID19_disease : le 1er janvier et le 3 janvier.",
+        search: "africasnow AfricasNow24" });
+      addN({ id: "site-20", col: 1, kind: "site", band: 6, title: "20minutes.fr", sub: "embarque @UNGeneva", goto: "onu", count: 1,
+        blurb: "20minutes.fr relie @FourageBernard (14 janvier, corpus français) à @UNGeneva (7 janvier). L’article embarque le statut.",
+        search: "20minutes FourageBernard UNGeneva" });
+      addN({ id: "site-echo", col: 1, kind: "site", band: 7, title: "bournemouthecho.co.uk", sub: "reprend la paire ONU / OMS", goto: "rel-echo", count: 2,
+        blurb: "bournemouthecho.co.uk relie @Bournemouthecho et une republication de @OlaAhmedDayo à @UNGeneva et @WHO. Les tweets passent par ift.tt/BFjCMDJ. La même paire est sur 26 éditions.",
+        search: "bournemouthecho ift.tt UNGeneva WHO OlaAhmedDayo" });
+      addN({ id: "site-ed", col: 1, kind: "site", band: 8, title: "25 autres éditions", sub: "domaines non listés", goto: "rel-echo", count: 25,
+        blurb: "Vingt-cinq autres éditions recopient la paire @UNGeneva et @WHO. Leurs domaines ne sont pas listés sur cette page. L’édition ouverte est le Bournemouth Echo. La lecture en compte 26 en tout.",
+        search: "éditions UNGeneva WHO" });
+      addN({ id: "site-rtbf", col: 1, kind: "site", band: 9, title: "rtbf.be", sub: "embarque @thewire_in", goto: "rtbf", count: 1,
+        blurb: "rtbf.be relie @arztdiego à @thewire_in. Les deux datent du 7 janvier. Le statut de The Wire cite par ailleurs un article de thewire.in, hors de ce passage.",
+        search: "rtbf thewire arztdiego" });
+      addN({ id: "site-q", col: 1, kind: "site", band: 10, title: "qactus.fr", sub: "hors corpus", goto: "qactus", count: 17,
+        blurb: "qactus.fr est cité par 17 publications originales du corpus français. Les deux statuts lus sur la page ne sont dans aucun des deux corpus. La page ne fait pas revenir vers une publication du corpus.",
+        search: "qactus" });
+      addN({ id: "gap-brics", col: 1, kind: "gap", band: 11, title: "Pas de page", sub: "le lien est le statut", goto: "direct",
+        blurb: "Pas de site relais. 49 publications originales citent l’adresse du statut de @BRICSinfo du 3 janvier. @BRICSinfo n’est repris dans aucune des 145 pages externes lues.",
+        search: "BRICSinfo" });
+      addN({ id: "gap-brics6", col: 1, kind: "gap", band: 12, title: "Pas de page", sub: "second statut · 6 jan", goto: "direct",
+        blurb: "Pas de site relais. 11 publications originales citent le statut de @BRICSinfo du 6 janvier par son adresse.",
+        search: "BRICSinfo 6 janvier" });
+      addN({ id: "gap-covid", col: 1, kind: "gap", band: 2.5, title: "Pas de page", sub: "41 publications · 1er jan", goto: "direct",
+        blurb: "Pas de site relais. 41 publications originales citent l’adresse du statut du 1er janvier, en plus des 22 pages qui l’intègrent. La lecture ajoute : aucune publication ne cite les deux adresses.",
+        search: "COVID19_disease 41" });
+
+      addN({ id: "s-c1", col: 2, kind: "status", band: 0, title: "@COVID19_disease", sub: "1er jan 2025 · 22 pages", goto: "covid",
+        blurb: "Statut du 1er janvier 2025. Il est repris par 22 pages, dont franceinfo, Newsweek, la traduction, Fact Crescendo, AfricasNow et 17 autres. Il est aussi cité sans page par 41 publications originales.",
+        search: "COVID19_disease 1874481684122607783" });
+      addN({ id: "s-c3", col: 2, kind: "status", band: 1, title: "@COVID19_disease", sub: "3 jan 2025 · second statut", goto: "rel-africa",
+        blurb: "Second statut de @COVID19_disease, du 3 janvier, repris par africasnow.com avec celui du 1er janvier.",
+        search: "COVID19_disease 1875222668980723816" });
+      addN({ id: "s-nab", col: 2, kind: "status", band: 2, title: "@nabilajamal_", sub: "3 jan 2025", goto: "rel-fact",
+        blurb: "Statut de @nabilajamal_ du 3 janvier, repris par english.factcrescendo.com avec le statut du 1er janvier.",
+        search: "nabilajamal" });
+      addN({ id: "s-un", col: 2, kind: "status", band: 3, title: "@UNGeneva", sub: "7 jan 2025, 15:00", goto: "onu",
+        blurb: "Statut de @UNGeneva du 7 janvier. Il est repris par 20minutes.fr, par le Bournemouth Echo, et par les 25 autres éditions qui recopient la paire avec @WHO.",
+        search: "UNGeneva" });
+      addN({ id: "s-who", col: 2, kind: "status", band: 4, title: "@WHO", sub: "7 jan 2025, 19:39", goto: "rel-echo",
+        blurb: "Statut de @WHO du 7 janvier. Il est repris avec @UNGeneva par le Bournemouth Echo et par 25 autres éditions.",
+        search: "WHO OMS" });
+      addN({ id: "s-wire", col: 2, kind: "status", band: 5, title: "@thewire_in", sub: "7 jan 2025, 06:30", goto: "rtbf",
+        blurb: "Statut de @thewire_in du 7 janvier, embarqué par rtbf.be. Ce statut cite un article de thewire.in.",
+        search: "thewire_in The Wire" });
+      addN({ id: "s-br", col: 2, kind: "status", band: 6, title: "@BRICSinfo", sub: "3 jan 2025 · 49 citations", goto: "direct",
+        blurb: "Statut du 3 janvier. 49 publications originales le citent par son adresse. Aucune des 145 pages externes lues ne l’embarque.",
+        search: "BRICSinfo 1875271122398376216" });
+      addN({ id: "s-br6", col: 2, kind: "status", band: 7, title: "@BRICSinfo", sub: "6 jan 2025 · 11 citations", goto: "direct",
+        blurb: "Second statut de @BRICSinfo, du 6 janvier, cité par son adresse par 11 publications originales.",
+        search: "BRICSinfo 1876127350594957707" });
+      addN({ id: "s-hors", col: 2, kind: "hors", band: 8, title: "Hors corpus", sub: "statuts lus, non inclus", goto: "qactus",
+        blurb: "Les deux statuts présents sur qactus.fr ne sont dans aucun des deux corpus. Les 17 publications citent la page, puis le passage quitte le corpus.",
+        search: "qactus hors corpus" });
+
+      const E = (from, to, kind, verb, tags, count) => addE({ from, to, kind, verb, tags, count: count || 0 });
+      E("c-fi", "site-fi", "cite", "cite l’adresse", ["simple", "fan"], 1);
+      E("site-fi", "s-c1", "embed", "reprend le statut", ["simple", "fan"], 1);
+      E("c-nw", "site-nw", "cite", "cite l’adresse", ["fan", "crowd"], 1);
+      E("c-34", "site-nw", "cite", "cite l’adresse", ["fan", "crowd"], 34);
+      E("site-nw", "s-c1", "embed", "reprend le statut", ["fan", "crowd"], 35);
+      E("c-fr", "site-tr", "cite", "cite l’adresse", ["fan"], 1);
+      E("c-sch", "site-tr", "cite", "cite l’adresse", ["fan"], 1);
+      E("site-tr", "s-c1", "embed", "reprend le statut", ["fan"], 2);
+      E("site-g17", "s-c1", "embed", "reprend le statut", ["fan"], 17);
+      E("c-lets", "site-fact", "cite", "cite l’adresse", ["fan", "multi"], 1);
+      E("c-fc", "site-fact", "cite", "cite l’adresse", ["fan", "multi"], 1);
+      E("site-fact", "s-c1", "embed", "reprend le statut", ["fan", "multi"], 2);
+      E("site-fact", "s-nab", "embed", "reprend le statut", ["fan", "multi"], 2);
+      E("c-af", "site-af", "cite", "cite l’adresse", ["fan", "multi"], 1);
+      E("site-af", "s-c1", "embed", "reprend le statut", ["fan", "multi"], 1);
+      E("site-af", "s-c3", "embed", "reprend le statut", ["fan", "multi"], 1);
+      E("c-four", "site-20", "cite", "cite l’adresse", ["simple"], 1);
+      E("site-20", "s-un", "embed", "reprend le statut", ["simple"], 1);
+      E("c-bm", "site-echo", "cite", "cite l’adresse", ["multi"], 1);
+      E("c-ola", "site-echo", "cite", "cite l’adresse", ["multi"], 1);
+      E("site-echo", "s-un", "embed", "reprend le statut", ["multi"], 1);
+      E("site-echo", "s-who", "embed", "reprend le statut", ["multi"], 1);
+      E("site-ed", "s-un", "embed", "reprend le statut", ["multi"], 25);
+      E("site-ed", "s-who", "embed", "reprend le statut", ["multi"], 25);
+      E("c-arz", "site-rtbf", "cite", "cite l’adresse", ["simple"], 1);
+      E("site-rtbf", "s-wire", "embed", "reprend le statut", ["simple"], 1);
+      E("c-q", "site-q", "cite", "cite l’adresse", ["hors"], 17);
+      E("site-q", "s-hors", "hors", "ne reprend pas de statut du corpus", ["hors"], 17);
+      E("c-b49", "gap-brics", "direct", "cite l’adresse du statut", ["direct"], 49);
+      E("gap-brics", "s-br", "direct", "sans page", ["direct"], 49);
+      E("c-b11", "gap-brics6", "direct", "cite l’adresse du statut", ["direct"], 11);
+      E("gap-brics6", "s-br6", "direct", "sans page", ["direct"], 11);
+      E("c-c41", "gap-covid", "direct", "cite l’adresse du statut", ["direct"], 41);
+      E("gap-covid", "s-c1", "direct", "sans page", ["direct"], 41);
+      return { nodes, edges };
+    }
+
+    function expanded() {
+      return state.expand || state.filter === "crowd" || state.filter === "multi";
+    }
+
+    function neighborhood(hit, edges) {
+      const keep = new Set(hit);
+      edges.forEach((e) => {
+        if (hit.has(e.from) || hit.has(e.to)) {
+          keep.add(e.from);
+          keep.add(e.to);
+        }
+      });
+      const mids = new Set([...keep].filter((id) => id.startsWith("site-") || id.startsWith("page-") || id.startsWith("gap")));
+      edges.forEach((e) => {
+        if (mids.has(e.from) || mids.has(e.to)) {
+          keep.add(e.from);
+          keep.add(e.to);
+        }
+      });
+      return keep;
+    }
+
+    function visibleGraph(nodes, edges) {
+      const open = expanded();
+      let ns = nodes.filter((n) => {
+        if (n.group17 && open) return false;
+        if (n.onlyExpand && !open) return false;
+        return true;
+      });
+      const ids0 = new Set(ns.map((n) => n.id));
+      let es = edges.filter((e) => ids0.has(e.from) && ids0.has(e.to));
+      if (state.filter !== "all") es = es.filter((e) => e.tags.includes(state.filter));
+      if (state.q) {
+        const hit = new Set(ns.filter((n) => (n.search + " " + n.title + " " + n.sub + " " + n.blurb).toLowerCase().includes(state.q)).map((n) => n.id));
+        if (hit.size > 0 && hit.size <= 14) {
+          const keep = neighborhood(hit, es);
+          es = es.filter((e) => keep.has(e.from) && keep.has(e.to));
+        }
+      }
+      const ids = new Set();
+      es.forEach((e) => { ids.add(e.from); ids.add(e.to); });
+      ns = ns.filter((n) => ids.has(n.id));
+      return { nodes: ns, edges: es };
+    }
+
+    function layout(nodes, edges) {
+      const pitch = 58;
+      const sites = nodes.filter((n) => n.col === 1).sort((a, b) => a.band - b.band);
+      let y = 8;
+      sites.forEach((site) => {
+        const citers = nodes.filter((n) => n.col === 0 && n.anchor === site.id).sort((a, b) => a.band - b.band);
+        const slots = Math.max(1, citers.length);
+        site.h = 48;
+        site.y = y + ((slots - 1) * pitch) / 2;
+        citers.forEach((c, i) => { c.h = 48; c.y = y + i * pitch; });
+        y += slots * pitch;
+      });
+      const rights = nodes.filter((n) => n.col === 2);
+      rights.forEach((n) => {
+        let anchors = edges.filter((e) => e.to === n.id && e.kind !== "direct").map((e) => nodes.find((s) => s.id === e.from)).filter(Boolean);
+        if (!anchors.length) anchors = edges.filter((e) => e.to === n.id).map((e) => nodes.find((s) => s.id === e.from)).filter(Boolean);
+        n.ideal = anchors.length ? anchors.reduce((s, a) => s + a.y + a.h / 2, 0) / anchors.length - 24 : 8;
+      });
+      rights.sort((a, b) => a.ideal - b.ideal || a.band - b.band);
+      let ry = 8;
+      rights.forEach((n) => { n.h = 48; n.y = Math.max(n.ideal, ry); ry = n.y + pitch; });
+      const H = Math.max(y, ry, 80) + 8;
+      const xs = [];
+      let x = GEO.pad;
+      for (let i = 0; i < 3; i += 1) {
+        xs.push(x);
+        x += GEO.w[i] + (i < 2 ? GEO.gutter : 0);
+      }
+      const W = x + GEO.pad;
+      nodes.forEach((n) => { n.x = xs[n.col]; n.w = GEO.w[n.col]; });
+      return { W, H };
+    }
+
+    function trunc(s, w) {
+      const max = Math.max(8, Math.floor((w - 22) / 7.05));
+      if (s.length <= max) return s;
+      return s.slice(0, max - 1) + "…";
+    }
+
+    function svgEl(name, attrs) {
+      const n = document.createElementNS("http://www.w3.org/2000/svg", name);
+      Object.entries(attrs || {}).forEach(([k, v]) => n.setAttribute(k, String(v)));
+      return n;
+    }
+
+    function draw() {
+      const full = model();
+      const { nodes, edges } = visibleGraph(full.nodes, full.edges);
+      const svg = document.getElementById("net");
+      const empty = document.getElementById("net-empty");
+      empty.hidden = nodes.length > 0;
+      if (state.selected && !nodes.some((n) => n.id === state.selected) && !full.nodes.some((n) => n.id === state.selected && n.onlyExpand && !expanded())) {
+        state.selected = null;
+      }
+      if (!nodes.length) {
+        svg.replaceChildren();
+        laidOut = [];
+        updatePanel(full.nodes);
+        return;
+      }
+      const { W, H } = layout(nodes, edges);
+      laidOut = nodes;
+      const inner = document.getElementById("figure-inner");
+      inner.style.width = W + "px";
+      const heads = document.getElementById("colheads");
+      heads.style.width = W + "px";
+      heads.style.gridTemplateColumns = GEO.w[0] + "px " + GEO.gutter + "px " + GEO.w[1] + "px " + GEO.gutter + "px " + GEO.w[2] + "px";
+      heads.style.paddingLeft = GEO.pad + "px";
+      heads.style.paddingRight = GEO.pad + "px";
+      svg.setAttribute("width", W);
+      svg.setAttribute("height", H);
+      svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      svg.style.width = W + "px";
+      svg.style.height = H + "px";
+      svg.replaceChildren();
+      const defs = svgEl("defs");
+      [["cite", "#1e3a5f"], ["embed", "#9a3412"], ["direct", "#57534e"], ["hors", "#7f1d1d"]].forEach(([kind, fill]) => {
+        const m = svgEl("marker", { id: "arrow-" + kind, viewBox: "0 0 10 10", refX: "8", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto" });
+        m.append(svgEl("path", { d: "M0 0 L10 5 L0 10 z", fill: fill }));
+        defs.append(m);
+      });
+      svg.append(defs);
+      let keep = null;
+      if (state.selected && nodes.some((n) => n.id === state.selected)) keep = neighborhood(new Set([state.selected]), edges);
+      edges.forEach((e) => {
+        const a = nodes.find((n) => n.id === e.from);
+        const b = nodes.find((n) => n.id === e.to);
+        if (!a || !b) return;
+        const x1 = a.x + a.w;
+        const y1 = a.y + a.h / 2;
+        const x2 = b.x;
+        const y2 = b.y + b.h / 2;
+        const mx = (x1 + x2) / 2;
+        const width = 1.35 + Math.min(e.count || 0, 49) / 49 * 3.4;
+        const path = svgEl("path", {
+          d: "M " + x1 + " " + y1 + " C " + mx + " " + y1 + ", " + mx + " " + y2 + ", " + x2 + " " + y2,
+          class: "edge " + e.kind + (keep && !(keep.has(e.from) && keep.has(e.to)) ? " is-dim" : ""),
+          "marker-end": "url(#arrow-" + e.kind + ")"
+        });
+        path.style.strokeWidth = width.toFixed(2);
+        svg.append(path);
+      });
+      nodes.forEach((n) => {
+        const g = svgEl("g", { "data-id": n.id, "data-kind": n.kind, tabindex: "0", role: "button" });
+        g.setAttribute("aria-label", n.title + ". " + n.sub + ". " + n.blurb);
+        if (keep && !keep.has(n.id)) g.classList.add("is-dim");
+        if (n.id === state.selected) g.classList.add("is-on");
+        const title = svgEl("title");
+        title.textContent = n.blurb;
+        g.append(title);
+        g.append(svgEl("rect", { class: "node", x: n.x, y: n.y, width: n.w, height: n.h, rx: n.kind === "site" || n.kind === "gap" ? 6 : 14 }));
+        let inset = 12;
+        const handle = FACES[n.id];
+        if (handle) {
+          const info = faceRecord(handle);
+          const cx = n.x + 22;
+          const cy = n.y + 24;
+          const clipId = "av-" + n.id.replace(/[^a-zA-Z0-9_-]/g, "");
+          const clip = svgEl("clipPath", { id: clipId });
+          clip.append(svgEl("circle", { cx: cx, cy: cy, r: 14 }));
+          defs.append(clip);
+          g.append(svgEl("circle", { cx: cx, cy: cy, r: 14, fill: "#1e3a5f" }));
+          const initials = svgEl("text", { x: cx, y: cy + 3.5, "text-anchor": "middle", class: "av-init" });
+          initials.textContent = info.fallback.slice(0, 2);
+          g.append(initials);
+          const face = svgEl("image", {
+            href: info.stored || remoteFace(handle),
+            x: n.x + 8,
+            y: n.y + 10,
+            width: 28,
+            height: 28,
+            preserveAspectRatio: "xMidYMid slice",
+            "clip-path": "url(#" + clipId + ")"
+          });
+          face.setAttribute("referrerpolicy", "no-referrer");
+          let step = info.stored ? 0 : 1;
+          face.addEventListener("error", () => {
+            if (step === 0) {
+              step = 1;
+              face.setAttribute("href", remoteFace(handle));
+              return;
+            }
+            face.remove();
+          });
+          g.append(face);
+          inset = 44;
+        }
+        const t1 = svgEl("text", { class: "nt", x: n.x + inset, y: n.y + 20 });
+        t1.textContent = trunc(n.title, n.w - (inset - 12));
+        const t2 = svgEl("text", { class: "ns", x: n.x + inset, y: n.y + 37 });
+        t2.textContent = trunc(n.sub, n.w - (inset - 12));
+        g.append(t1, t2);
+        g.addEventListener("click", () => select(n.id));
+        g.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(n.id); }
+        });
+        svg.append(g);
+      });
+      const ul = document.getElementById("net-list");
+      ul.replaceChildren();
+      edges.forEach((e) => {
+        const a = nodes.find((n) => n.id === e.from);
+        const b = nodes.find((n) => n.id === e.to);
+        if (!a || !b) return;
+        const li = document.createElement("li");
+        li.textContent = a.title + " — " + e.verb + " — " + b.title;
+        ul.append(li);
+      });
+      if (refocus && state.selected) {
+        const g = svg.querySelector('[data-id="' + CSS.escape(state.selected) + '"]');
+        if (g) g.focus();
+        refocus = false;
+      }
+      updatePanel(full.nodes);
+      document.querySelectorAll(".bar").forEach((bar) => {
+        const ids = (bar.dataset.nodes || "").split(/\s+/);
+        bar.classList.toggle("is-on", !!state.selected && (bar.dataset.select === state.selected || ids.includes(state.selected)));
+      });
+      document.querySelectorAll(".relay, .mini").forEach((el) => {
+        const ids = (el.dataset.nodes || "").split(/\s+/);
+        el.classList.toggle("is-on", !!state.selected && ids.includes(state.selected));
+      });
+    }
+
+    function updatePanel(nodes) {
+      const n = nodes.find((x) => x.id === state.selected);
+      const kicker = document.getElementById("panel-kicker");
+      const text = document.getElementById("panel-text");
+      const wrap = document.getElementById("panel-go-wrap");
+      if (!n) {
+        kicker.textContent = "Passage";
+        text.textContent = "Cliquez un compte ou un site. Le tracé qui reste est son passage.";
+        wrap.hidden = true;
+        state.goto = "";
+        return;
+      }
+      const role = { citer: "Publication qui cite", site: "Site relais", status: "Publication reprise", gap: "Pas de site relais", hors: "Hors corpus" }[n.kind] || "Passage";
+      kicker.textContent = role;
+      text.textContent = n.blurb;
+      state.goto = n.goto || "";
+      wrap.hidden = !state.goto;
+    }
+
+    function matches(el) {
+      const tags = (el.dataset.tags || "").split(/\s+/).filter(Boolean);
+      if (state.filter !== "all" && !tags.includes(state.filter)) return false;
+      const searchable = el.classList.contains("relay") || el.classList.contains("bar") || el.classList.contains("mini") || el.classList.contains("bar-note");
+      if (state.q && searchable && !el.textContent.toLowerCase().includes(state.q)) return false;
+      return true;
+    }
+
+    function apply() {
+      document.querySelectorAll("section.group").forEach((s) => { s.hidden = false; });
+      document.querySelectorAll("[data-tags]").forEach((el) => { el.hidden = !matches(el); });
+      document.querySelectorAll("section.group").forEach((sec) => {
+        const relays = [...sec.querySelectorAll(".relay")];
+        sec.hidden = relays.length > 0 && relays.every((r) => r.hidden);
+      });
+      document.querySelectorAll(".bar-group").forEach((g) => {
+        const bits = [...g.querySelectorAll(".bar, .bar-note")];
+        g.hidden = bits.length > 0 && bits.every((b) => b.hidden);
+      });
+      const volBits = [...document.querySelectorAll("#volumes .bar, #volumes .bar-note")];
+      document.getElementById("volumes").hidden = volBits.every((b) => b.hidden);
+      const relays = [...document.querySelectorAll(".relay")];
+      const visible = relays.filter((r) => !r.hidden).length;
+      document.getElementById("shown").textContent = visible + " passage" + (visible > 1 ? "s" : "") + " affiché" + (visible > 1 ? "s" : "");
+      const rows = [...document.querySelectorAll("#autres .mini")];
+      const shownRows = rows.filter((r) => !r.hidden).length;
+      const count = document.getElementById("autres-count");
+      if (count) {
+        count.textContent = (state.filter === "all" && !state.q)
+          ? rows.length + " pages. Chacune reprend au moins le statut du 1er janvier."
+          : shownRows + " page" + (shownRows > 1 ? "s" : "") + " de cette liste avec ce filtre.";
+      }
+      const forced = state.filter === "crowd" || state.filter === "multi";
+      const btn = document.getElementById("expand");
+      btn.hidden = forced;
+      btn.textContent = state.expand ? "Replier les 17 domaines" : "Déplier les 17 domaines";
+      btn.setAttribute("aria-expanded", state.expand ? "true" : "false");
+      document.getElementById("expand-note").hidden = !forced;
+      document.querySelectorAll(".chips button").forEach((b) => {
+        b.setAttribute("aria-pressed", b.dataset.filter === state.filter ? "true" : "false");
+      });
+      draw();
+    }
+
+    function select(id, opts) {
+      if (id && String(id).startsWith("page-")) state.expand = true;
+      state.selected = id;
+      refocus = !!(opts && opts.focus);
+      apply();
+    }
+
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
+
+    document.querySelectorAll(".chips button").forEach((b) => {
+      b.addEventListener("click", () => { state.filter = b.dataset.filter; apply(); });
+    });
+    document.getElementById("q").addEventListener("input", (e) => {
+      state.q = e.target.value.trim().toLowerCase();
+      apply();
+    });
+    document.getElementById("expand").addEventListener("click", () => {
+      state.expand = !state.expand;
+      apply();
+    });
+    document.body.addEventListener("click", (e) => {
+      const bar = e.target.closest(".bar");
+      if (bar && bar.dataset.select) {
+        select(bar.dataset.select);
+        scrollToId("reseau");
+        return;
+      }
+      const btn = e.target.closest("button[data-select]");
+      if (!btn) return;
+      select(btn.dataset.select);
+      scrollToId("reseau");
+    });
+    document.getElementById("panel-go").addEventListener("click", () => { if (state.goto) scrollToId(state.goto); });
+    document.getElementById("net").addEventListener("keydown", (e) => {
+      const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+      if (!keys.includes(e.key) || !laidOut.length) return;
+      const cur = laidOut.find((n) => n.id === state.selected) || laidOut[0];
+      let next = null;
+      if (e.key === "ArrowUp") next = laidOut.filter((n) => n.col === cur.col && n.y < cur.y - 1).sort((a, b) => b.y - a.y)[0];
+      if (e.key === "ArrowDown") next = laidOut.filter((n) => n.col === cur.col && n.y > cur.y + 1).sort((a, b) => a.y - b.y)[0];
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        const col = cur.col + (e.key === "ArrowRight" ? 1 : -1);
+        const pool = laidOut.filter((n) => n.col === col);
+        pool.sort((a, b) => Math.abs((a.y + a.h / 2) - (cur.y + cur.h / 2)) - Math.abs((b.y + b.h / 2) - (cur.y + cur.h / 2)));
+        next = pool[0];
+      }
+      if (!next) return;
+      e.preventDefault();
+      select(next.id, { focus: true });
+    });
+    document.getElementById("net").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("net")) select(null);
+    });
+
+    document.querySelectorAll(".bar").forEach((bar) => {
+      const n = Number(bar.dataset.n);
+      const span = bar.querySelector(".bar-track span");
+      span.style.width = (n / 49 * 100) + "%";
+      bar.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(bar.dataset.select); scrollToId("reseau"); }
+      });
+    });
+
+    function aliasBars() {
+      const want = { "livemint.com": "page-livemint", "businessinsider.com": "page-bi" };
+      DATA.pages.forEach((p, i) => {
+        const key = want[p.domain];
+        if (!key) return;
+        const bar = document.querySelector('.bar[data-select="' + key + '"]');
+        if (!bar) return;
+        bar.dataset.select = "page-" + i;
+        bar.dataset.nodes = "page-" + i + " s-c1";
+      });
+    }
+
+    const textToggle = document.getElementById("show-texts");
+    function setTexts(on) {
+      document.body.classList.toggle("show-texts", on);
+      textToggle.checked = on;
+      try { localStorage.setItem("hmpv-texts", on ? "1" : "0"); } catch (err) { /* lecture seule */ }
+    }
+    textToggle.addEventListener("change", () => setTexts(textToggle.checked));
+    try { if (localStorage.getItem("hmpv-texts") === "1") setTexts(true); } catch (err) { /* pas de mémoire */ }
+
+    hydrate();
+    aliasBars();
+    apply();
+  </script>
+</body>
+</html>
