@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diffusion des URL — HMPV fusionné</title>
+<style>
+  :root {
+    --bg: #f3eee4;
+    --paper: #fbf8f2;
+    --ink: #2c2622;
+    --muted: #7d7368;
+    --line: #e5d9cb;
+    --line-strong: #d3c4b2;
+    --accent: #8f4d38;
+    --chip: #efe4d6;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  header {
+    display: flex;
+    gap: 22px;
+    align-items: flex-end;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--line-strong);
+    background: var(--paper);
+  }
+  h1 {
+    margin: 0;
+    font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    font-weight: 500;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+  }
+  .lede { margin: 3px 0 0; max-width: 760px; color: var(--muted); line-height: 1.4; font-size: 13px; }
+  .head-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  button, .btn {
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  button:hover, .btn:hover { background: #f6efe6; }
+  button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.28fr) minmax(400px, 0.92fr);
+    min-height: 0;
+  }
+  .left, .right { min-height: 0; }
+  .left { display: flex; flex-direction: column; border-right: 1px solid var(--line-strong); }
+  .toolbar {
+    padding: 10px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg);
+  }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  input[type="search"] {
+    flex: 1;
+    min-width: 180px;
+    font: inherit;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .count { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .scale {
+    width: 120px; height: 10px; border-radius: 99px;
+    background: linear-gradient(90deg, #f6f1ea, #e7cfc0, #8f4d38);
+    border: 1px solid var(--line);
+  }
+  details.gloss, details.cover {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 12px 10px;
+  }
+  details.gloss summary, details.cover summary {
+    cursor: pointer;
+    font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 16px;
+  }
+  details.gloss h3, details.cover h3, dialog h3 {
+    font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    font-weight: 500;
+    font-size: 15px;
+    margin: 12px 0 4px;
+  }
+  details.gloss dl, #methodCols dl { margin: 0; }
+  details.gloss dt, #methodCols dt { font-weight: 650; margin-top: 8px; }
+  details.gloss dd, #methodCols dd { margin: 2px 0 0; color: var(--muted); line-height: 1.45; }
+  .sheet { flex: 1; overflow: auto; background: var(--paper); }
+  .sheet table { border-collapse: separate; border-spacing: 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .sheet th, .sheet td { border-bottom: 1px solid var(--line); border-right: 1px solid #f3ebdf; padding: 0; text-align: right; white-space: nowrap; }
+  .sheet th {
+    position: sticky; top: 0; z-index: 2;
+    background: #f7f2ea;
+    font-weight: 550;
+    cursor: pointer;
+    min-width: 64px;
+    vertical-align: bottom;
+  }
+  .sheet th .grp { display: block; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 6px 0; text-align: left; color: var(--muted); }
+  .sheet th .nm { display: block; padding: 2px 6px 6px; text-align: left; font-size: 11.5px; }
+  .sheet th.lab, .sheet td.lab {
+    position: sticky; left: 0; z-index: 1;
+    text-align: left; min-width: 210px; max-width: 260px;
+    background: var(--paper);
+    border-right: 1px solid var(--line-strong);
+  }
+  .sheet th.lab { z-index: 4; background: #f7f2ea; cursor: default; }
+  .sheet td.lab button.linkish {
+    all: unset; cursor: pointer; display: block; width: 100%; padding: 6px 8px 7px;
+  }
+  .sheet td.lab button.linkish:hover { background: #f6efe6; }
+  .host { font-weight: 600; }
+  .path { color: var(--muted); display: block; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+  .mini { display: flex; gap: 4px; margin-top: 3px; }
+  .sheet td.cell { min-width: 64px; }
+  .sheet td.cell span { display: block; padding: 7px 6px; }
+  .sheet td.cell span.na { background: #f3eee6; color: #b7aa9c; }
+  .sheet tr.on td.lab { background: #f3e7dc; }
+  .sheet tr.on td.cell span { box-shadow: inset 0 -2px 0 var(--accent); }
+  .right { overflow: auto; background: var(--bg); padding: 14px 16px 28px; }
+  .kicker { color: var(--muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 4px; }
+  .url-title { margin: 0; font-family: "Palatino Linotype", Palatino, Georgia, serif; font-size: 22px; font-weight: 500; line-height: 1.25; word-break: break-word; }
+  .url-title a { color: inherit; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .badge { border-radius: 999px; padding: 3px 8px; font-size: 12px; background: var(--chip); }
+  .badge.tone {
+    background: color-mix(in srgb, var(--c) 20%, var(--paper));
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent);
+  }
+  .right details.cover { margin-bottom: 16px; }
+  .area-row, .rule li {
+    display: grid;
+    gap: 8px;
+    align-items: center;
+    margin: 3px 0;
+    font-size: 12px;
+  }
+  .area-row { grid-template-columns: 148px minmax(0, 1fr) 32px; }
+  .area-name { display: inline-flex; align-items: center; gap: 6px; }
+  .track {
+    display: block; height: 8px; background: var(--chip); border-radius: 99px; overflow: hidden;
+  }
+  .track i { display: block; height: 100%; border-radius: 99px; }
+  .rule { margin: 0 0 12px; }
+  .rule header { display: flex; gap: 8px; align-items: center; }
+  .rule ul { list-style: none; margin: 4px 0 0; padding: 0; }
+  .rule li { grid-template-columns: 108px 32px minmax(0, 1fr); color: var(--muted); }
+  .rule li.all { color: var(--ink); font-weight: 650; }
+  .cross-wrap { overflow: auto; }
+  table.cross { border-collapse: separate; border-spacing: 3px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  table.cross th, table.cross td {
+    border: 0; padding: 4px 6px; text-align: center; min-width: 34px; border-radius: 6px;
+  }
+  table.cross th.rot {
+    height: 86px; writing-mode: vertical-rl; transform: rotate(180deg);
+    font-weight: 550; background: transparent; white-space: nowrap;
+  }
+  table.cross tbody th { text-align: left; font-weight: 550; background: transparent; }
+  .space2d, .space3d {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 8px 0 14px;
+  }
+  #space2dAbs { width: 100%; height: 440px; }
+  #space3dAbs { width: 100%; height: 480px; }
+  .space2d .hud, .space3d .hud {
+    padding: 0 10px 8px;
+    display: flex; flex-wrap: wrap; gap: 6px 10px;
+    color: var(--muted); font-size: 11px;
+  }
+  .level-grid { display: grid; gap: 8px; margin: 8px 0; }
+  .level-grid article {
+    background: color-mix(in srgb, var(--c) 10%, var(--paper));
+    border: 1px solid color-mix(in srgb, var(--c) 28%, var(--line));
+    border-radius: 10px; padding: 8px 10px;
+  }
+  .level-grid h4 { margin: 0 0 4px; font-size: 13px; }
+  .level-grid p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+  .cell-list { display: grid; gap: 4px; margin: 8px 0 0; font-size: 12px; }
+  .cell-list div { display: grid; grid-template-columns: minmax(0, 1fr) 36px; gap: 8px; align-items: center; }
+  .story { margin: 0 0 12px; padding-left: 18px; }
+  .story li { margin: 0 0 4px; line-height: 1.4; }
+  .mech { display: flex; height: 16px; border-radius: 99px; overflow: hidden; background: var(--chip); margin: 6px 0 4px; }
+  .mech i { display: block; height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 12px; color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+  .sw { width: 9px; height: 9px; border-radius: 2px; display: inline-block; margin-right: 4px; }
+  svg.scheme, svg.chart { width: 100%; height: auto; display: block; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; }
+  .slider-row { display: flex; gap: 10px; align-items: center; margin: 8px 0 12px; }
+  input[type="range"] { flex: 1; }
+  .note { color: var(--muted); font-size: 12.5px; line-height: 1.45; margin: 8px 0; }
+  .charts { display: grid; gap: 8px; margin: 8px 0 14px; }
+  .post {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin: 0 0 8px;
+  }
+  .post header { display: block; padding: 0; border: 0; background: transparent; font-size: 12px; color: var(--muted); }
+  .post p { margin: 4px 0; line-height: 1.4; }
+  .post a { color: var(--accent); font-size: 12px; }
+  h2 { font-family: "Palatino Linotype", Palatino, Georgia, serif; font-weight: 500; font-size: 18px; margin: 16px 0 6px; }
+  dialog {
+    width: min(760px, calc(100vw - 32px));
+    max-height: min(82vh, 860px);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 18px 20px 16px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  dialog::backdrop { background: rgba(28, 25, 21, 0.35); }
+  dialog p { line-height: 1.45; margin: 0 0 10px; }
+  dialog h3 { font-family: "Palatino Linotype", Palatino, Georgia, serif; font-weight: 500; margin: 14px 0 6px; }
+  dialog ul { margin: 0 0 10px; padding-left: 18px; }
+  dialog li { margin: 0 0 4px; line-height: 1.4; }
+  .empty { color: var(--muted); padding: 24px 8px; }
+  @media (max-width: 1100px) {
+    body { height: auto; overflow: auto; display: block; }
+    main { display: block; }
+    .left { border-right: 0; border-bottom: 1px solid var(--line-strong); }
+    .sheet { height: 70vh; }
+    header { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Diffusion des URL</h1>
+    <p class="lede" id="lede">HMPV fusionné · français et anglais. Chargement des indicateurs…</p>
+  </div>
+  <div class="head-actions">
+    <button type="button" id="methodBtn">Méthode</button>
+    <button type="button" id="exportBtn">Exporter le CSV</button>
+  </div>
+</header>
+<main>
+  <section class="left">
+    <div class="toolbar">
+      <div class="row">
+        <input id="q" type="search" placeholder="URL, domaine, compte d'origine" autocomplete="off">
+        <label class="count">Adoptants min. <input id="minAd" type="range" min="0" max="20" value="0"></label>
+        <span class="count" id="minAdLab">0</span>
+        <span class="count" id="shown"></span>
+      </div>
+      <div class="row chips" id="profileChips"></div>
+      <div class="row">
+        <span class="scale" title="Rang percentile, du plus bas au plus haut"></span>
+        <span class="count">couleur = rang dans les URL affichées · chiffre = valeur brute</span>
+        <button type="button" id="modeBtn">Rang</button>
+      </div>
+      <details class="gloss">
+        <summary>Calcul de chaque colonne</summary>
+        <div id="glossBody"></div>
+      </details>
+    </div>
+    <div class="sheet" id="sheet"></div>
+  </section>
+  <section class="right">
+    <details class="cover" id="coverage" open>
+      <summary>Espace 3D et typologie</summary>
+      <div id="coverageBody"></div>
+    </details>
+    <div id="detail">
+      <p class="empty">Choisissez une URL dans la matrice.</p>
+    </div>
+  </section>
+</main>
+<dialog id="method">
+  <h2>Méthode</h2>
+  <div id="methodBody"></div>
+  <h3>Colonnes du tableau</h3>
+  <div id="methodCols"></div>
+  <h3>Profils</h3>
+  <div id="profileRules"></div>
+  <form method="dialog"><button type="submit">Fermer</button></form>
+</dialog>
+<script src="plotly.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
