@@ -74,11 +74,9 @@ const FICHE = [
 let REF = null;
 const plotSpace = {
   bound2d: false,
-  bound3d: false,
   colorMode: "influence",
   xRange2d: null,
   yRange2d: null,
-  camera3d: null,
 };
 
 const SEGS = [
@@ -175,34 +173,14 @@ function refBand(values) {
   return { med, high: Math.max(2 * med, p75, med + 1e-9) };
 }
 
-function meanSd(values) {
-  const n = values.length || 1;
-  const mean = values.reduce((sum, value) => sum + value, 0) / n;
-  const var_ = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / n;
-  return { mean, sd: Math.sqrt(var_) || 1 };
-}
-
 function buildRef(rows) {
-  const mils = rows.map((row) => row.n_milieux || 0);
-  const milStat = meanSd(mils);
   return {
     ad: refBand(rows.map((row) => row.adopters || 0)),
-    mil: refBand(mils),
-    milMean: milStat.mean,
-    milSd: milStat.sd,
+    mil: refBand(rows.map((row) => row.n_milieux || 0)),
     hl: refBand(rows.map((row) => row.half_life || 0)),
     acts: refBand(rows.map((row) => (row.rt_n || 0) + (row.quote_n || 0) + (row.reply_n || 0))),
     n: rows.length,
   };
-}
-
-function milZ(row) {
-  return ((row.n_milieux || 0) - REF.milMean) / REF.milSd;
-}
-
-/** Échelle d'affichage : asinh étale le centre et limite l'effet des outliers. */
-function milZVis(row) {
-  return Math.asinh(milZ(row));
 }
 
 function softRel(value, med, high) {
@@ -432,23 +410,15 @@ function coverageKey() {
 function absExtents(rows) {
   const maxX = Math.max(REF.ad.med * 1.2, ...rows.map((row) => row.adopters || 0));
   const maxY = Math.max(REF.hl.med * 1.2, ...rows.map((row) => row.half_life || 0));
-  const zs = rows.map((row) => milZVis(row));
-  const zLo = Math.min(...zs);
-  const zHi = Math.max(...zs);
-  const span = Math.max(1.2, zHi - zLo);
-  const pad = 0.12 * span;
   return {
     xMax: maxX * 1.06,
     yMax: maxY * 1.06,
-    zMin: zLo - pad,
-    zMax: zHi + pad,
   };
 }
 
 function hoverHtml(row) {
   const named = row._profiles.map((id) => PROFILES.find((p) => p.id === id).label).join(", ") || "sans croisement nommé";
-  const z = milZ(row);
-  return `<b>${esc(row.host)}</b><br>${esc(pathOf(row.url) || row.url)}<br>${esc(cellLabel(row._cell))}<br>${esc(named)}<br>adoptants ${(row.adopters || 0).toLocaleString("fr-FR")} · t½ ${fmt("num", row.half_life)} j · milieux ${(row.n_milieux || 0).toLocaleString("fr-FR")} (z=${z.toLocaleString("fr-FR", { maximumFractionDigits: 2, signDisplay: "exceptZero" })})<br>RT ${(row.rt_n || 0).toLocaleString("fr-FR")}`;
+  return `<b>${esc(row.host)}</b><br>${esc(pathOf(row.url) || row.url)}<br>${esc(cellLabel(row._cell))}<br>${esc(named)}<br>adoptants ${(row.adopters || 0).toLocaleString("fr-FR")} · t½ ${fmt("num", row.half_life)} j · milieux ${(row.n_milieux || 0).toLocaleString("fr-FR")}<br>RT ${(row.rt_n || 0).toLocaleString("fr-FR")}`;
 }
 
 function paintCoverage() {
@@ -459,12 +429,10 @@ function paintCoverage() {
     box.innerHTML = '<p class="note">Aucune URL ne reste après la recherche et le filtre d\'adoptants.</p>';
     plotSpace.lastKey = "";
     plotSpace.bound2d = false;
-    plotSpace.bound3d = false;
     return;
   }
-  if (document.getElementById("space2dAbs") && document.getElementById("space3dAbs") && plotSpace.lastKey === coverageKey() && box.querySelector(".level-grid")) {
+  if (document.getElementById("space2dAbs") && plotSpace.lastKey === coverageKey() && box.querySelector(".level-grid")) {
     drawSpace2dAbs(rows);
-    drawSpace3dAbs(rows);
     return;
   }
   plotSpace.lastKey = coverageKey();
@@ -507,9 +475,8 @@ function paintCoverage() {
   const quadNote = `Les traits médians (adoptants ${fmt("num", REF.ad.med)}, t½ ${fmt("num", REF.hl.med)} j) découpent 4 espaces : bref×restreint · bref×large · durable×restreint · durable×large.`;
 
   plotSpace.bound2d = false;
-  plotSpace.bound3d = false;
   box.innerHTML = `
-    <p class="note">Lecture en valeurs absolues seulement. Taille des points = nombre de RT (échelle √). Couleur = type d'influence ou croisement nommé. Médianes figées sur les ${REF.n.toLocaleString("fr-FR")} URL du tableau.</p>
+    <p class="note">Lecture en valeurs absolues. Taille des points = nombre de RT (échelle √). Couleur = type d'influence ou croisement nommé. Médianes figées sur les ${REF.n.toLocaleString("fr-FR")} URL du tableau.</p>
     <div class="row" style="margin:6px 0 10px">
       <button type="button" id="colorInfl" class="${plotSpace.colorMode === "influence" ? "on" : ""}">Couleur = influence</button>
       <button type="button" id="colorNamed" class="${plotSpace.colorMode === "named" ? "on" : ""}">Couleur = croisement</button>
@@ -519,14 +486,10 @@ function paintCoverage() {
     <p class="note">${esc(quadNote)} Molette pour zoomer, clic pour ouvrir une URL.</p>
     <div class="space2d"><div id="space2dAbs"></div><div class="hud"><span>méd. adoptants ${fmt("num", REF.ad.med)} · méd. t½ ${fmt("num", REF.hl.med)} j · taille = RT</span></div></div>
 
-    <h3>2 · Cube 3D — + pénétration milieux (z-score)</h3>
-    <p class="note">Même plan (X adoptants, Y demi-vie). Z = asinh(z-score des milieux) pour étaler la pénétration relative sans laisser les outliers écraser l'axe — z = (n − moy.) / σ, moy. ${fmt("num", REF.milMean)}, σ ${fmt("num", REF.milSd)}. Plan Z = 0 = moyenne. Orbit / molette.</p>
-    <div class="space3d"><div id="space3dAbs"></div><div class="hud"><span>Z = asinh(z milieux) · 0 = moyenne (${fmt("num", REF.milMean)}) · taille = RT</span></div></div>
-
-    <h3>3 · Niveaux exhaustifs</h3>
+    <h3>2 · Niveaux exhaustifs</h3>
     <div class="level-grid">${levelBlocks}</div>
 
-    <h3>4 · Cellules et croisements</h3>
+    <h3>3 · Cellules et croisements</h3>
     <p class="note">La typologie exhaustive est le triplet spatial × temporel × influence. Une URL appartient à exactement une cellule. Les croisements nommés sont des labels de lecture non exclusifs.</p>
     <div class="cell-list" style="margin-bottom:12px">${topCells}</div>
     <div class="areas">${namedBars}</div>`;
@@ -539,7 +502,6 @@ function paintCoverage() {
     paintCoverage();
   });
   drawSpace2dAbs(rows);
-  drawSpace3dAbs(rows);
 }
 
 function groupKey(row) {
@@ -681,157 +643,6 @@ function drawSpace2dAbs(rows) {
           plotSpace.xRange2d = null;
           plotSpace.yRange2d = null;
         }
-      });
-    }
-  });
-}
-
-function planeMeshAbs(axis, value, xMax, yMax, zMin, zMax, color, name) {
-  const u = [0, 1, 0, 1];
-  const v = [0, 0, 1, 1];
-  const zSpan = (t) => zMin + t * (zMax - zMin);
-  let x;
-  let y;
-  let z;
-  if (axis === "x") {
-    x = u.map(() => value);
-    y = u.map((t) => t * yMax);
-    z = v.map(zSpan);
-  } else if (axis === "y") {
-    x = u.map((t) => t * xMax);
-    y = u.map(() => value);
-    z = v.map(zSpan);
-  } else {
-    x = u.map((t) => t * xMax);
-    y = v.map((t) => t * yMax);
-    z = u.map(() => value);
-  }
-  return {
-    type: "mesh3d",
-    x, y, z,
-    i: [0, 0],
-    j: [1, 3],
-    k: [3, 2],
-    opacity: 0.13,
-    color,
-    flatshading: true,
-    hoverinfo: "skip",
-    showlegend: false,
-    name,
-  };
-}
-
-function boxEdgesAbs(xMax, yMax, zMin, zMax) {
-  const corners = [
-    [0, 0, zMin], [xMax, 0, zMin], [xMax, yMax, zMin], [0, yMax, zMin],
-    [0, 0, zMax], [xMax, 0, zMax], [xMax, yMax, zMax], [0, yMax, zMax],
-  ];
-  const edges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
-  const x = [];
-  const y = [];
-  const z = [];
-  edges.forEach(([a, b]) => {
-    x.push(corners[a][0], corners[b][0], null);
-    y.push(corners[a][1], corners[b][1], null);
-    z.push(corners[a][2], corners[b][2], null);
-  });
-  return {
-    type: "scatter3d",
-    mode: "lines",
-    x, y, z,
-    line: { color: "#c9bba6", width: 2 },
-    hoverinfo: "skip",
-    showlegend: false,
-    name: "cadre",
-  };
-}
-
-function drawSpace3dAbs(rows) {
-  const root = document.getElementById("space3dAbs");
-  if (!root || typeof Plotly === "undefined") {
-    if (root) root.innerHTML = '<p class="note">Plotly n\'est pas chargé (fichier plotly.min.js manquant).</p>';
-    return;
-  }
-  const { xMax, yMax, zMin, zMax } = absExtents(rows);
-  const maxRt = Math.max(1, ...rows.map((row) => row.rt_n || 0));
-  const traces = [
-    boxEdgesAbs(xMax, yMax, zMin, zMax),
-    planeMeshAbs("x", REF.ad.med, xMax, yMax, zMin, zMax, "#3e6d78", "méd. adoptants"),
-    planeMeshAbs("y", REF.hl.med, xMax, yMax, zMin, zMax, "#7d5e78", "méd. demi-vie"),
-    planeMeshAbs("z", 0, xMax, yMax, zMin, zMax, "#5f7a4a", "z milieux = 0"),
-  ];
-  groupedRows(rows).forEach((items, key) => {
-    const meta = groupMeta(key);
-    const selected = items.map(({ row }) => row.url === state.selected);
-    traces.push({
-      type: "scatter3d",
-      mode: "markers",
-      name: meta.label,
-      x: items.map(({ row }) => row.adopters || 0),
-      y: items.map(({ row }) => row.half_life || 0),
-      z: items.map(({ row }) => milZVis(row)),
-      text: items.map(({ row }) => hoverHtml(row)),
-      customdata: items.map(({ row }) => row.url),
-      hovertemplate: "%{text}<extra></extra>",
-      marker: {
-        size: items.map(({ row }, i) => markerSize(row.rt_n, maxRt, selected[i], 22)),
-        color: meta.color,
-        opacity: 0.88,
-        line: { width: items.map((_, i) => (selected[i] ? 2 : 0)), color: "#2c2622" },
-      },
-    });
-  });
-  const layout = {
-    margin: { l: 0, r: 0, t: 8, b: 0 },
-    paper_bgcolor: "#fbf8f2",
-    scene: {
-      aspectmode: "manual",
-      aspectratio: { x: 1, y: 0.95, z: 1.85 },
-      xaxis: {
-        title: { text: "Adoptants", font: { size: 12, color: "#3e6d78" } },
-        range: [0, xMax],
-        backgroundcolor: "#f7f2ea",
-        gridcolor: "#e5d9cb",
-        zerolinecolor: "#d3c4b2",
-      },
-      yaxis: {
-        title: { text: "Demi-vie (j)", font: { size: 12, color: "#7d5e78" } },
-        range: [0, yMax],
-        backgroundcolor: "#f7f2ea",
-        gridcolor: "#e5d9cb",
-        zerolinecolor: "#d3c4b2",
-      },
-      zaxis: {
-        title: { text: "Milieux · asinh(z)", font: { size: 12, color: "#5f7a4a" } },
-        range: [zMin, zMax],
-        backgroundcolor: "#f7f2ea",
-        gridcolor: "#e5d9cb",
-        zeroline: true,
-        zerolinecolor: "#5f7a4a",
-      },
-      camera: plotSpace.camera3d || { eye: { x: 1.55, y: 1.25, z: 1.35 } },
-    },
-    legend: {
-      orientation: "h",
-      y: 1.12,
-      x: 0,
-      font: { size: 11, color: "#2c2622" },
-      bgcolor: "rgba(251,248,242,0.9)",
-    },
-    showlegend: true,
-  };
-  const config = {
-    responsive: true,
-    displaylogo: false,
-    scrollZoom: true,
-    modeBarButtonsToRemove: ["toImage", "lasso2d", "select2d"],
-  };
-  return Plotly.react(root, traces, layout, config).then(() => {
-    bindPlotClick(root, "bound3d");
-    if (!root._camBound) {
-      root._camBound = true;
-      root.on("plotly_relayout", (event) => {
-        if (event["scene.camera"]) plotSpace.camera3d = event["scene.camera"];
       });
     }
   });
@@ -1250,7 +1061,7 @@ function boot() {
       <li><b>Persistante.</b> Temporel persistant.</li>
       <li><b>Ponctuelle.</b> Spatial restreint, temporel bref, influence faible.</li>
     </ul>
-    <p>Ces croisements peuvent se cumuler. Une URL sans croisement nommé reste visible dans le nuage 3D via sa cellule.</p>`;
+    <p>Ces croisements peuvent se cumuler. Une URL sans croisement nommé reste visible dans le nuage 2D via sa cellule.</p>`;
   const maxAd = DATA.urls.reduce((max, row) => Math.max(max, row.adopters || 0), 0);
   const slider = document.getElementById("minAd");
   slider.max = String(Math.max(10, maxAd));

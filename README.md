@@ -8,6 +8,6 @@ https://mshubeco.github.io/hmpv-sites-relais/
 
 ## Diffusion des URL
 
-Typologie et graphes Plotly (2D / 3D) de la diffusion des URL dans le corpus HMPV fusionné.
+Typologie et nuage Plotly 2D de la diffusion des URL dans le corpus HMPV fusionné.
 
 https://mshubeco.github.io/hmpv-sites-relais/url-diffusion/
