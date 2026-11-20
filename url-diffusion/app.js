@@ -407,13 +407,34 @@ function coverageKey() {
   ].join("|");
 }
 
+function logPos(value, floor) {
+  const v = Number(value) || 0;
+  return v > 0 ? v : floor;
+}
+
 function absExtents(rows) {
-  const maxX = Math.max(REF.ad.med * 1.2, ...rows.map((row) => row.adopters || 0));
-  const maxY = Math.max(REF.hl.med * 1.2, ...rows.map((row) => row.half_life || 0));
+  const xs = rows.map((row) => row.adopters || 0).filter((v) => v > 0);
+  const ys = rows.map((row) => row.half_life || 0).filter((v) => v > 0);
+  const xMin = Math.min(REF.ad.med, ...(xs.length ? xs : [1]));
+  const yMin = Math.min(REF.hl.med, ...(ys.length ? ys : [0.01]));
+  const xMax = Math.max(REF.ad.med, ...(xs.length ? xs : [1]));
+  const yMax = Math.max(REF.hl.med, ...(ys.length ? ys : [0.01]));
   return {
-    xMax: maxX * 1.06,
-    yMax: maxY * 1.06,
+    xFloor: 1,
+    yFloor: Math.min(0.01, yMin / 2),
+    xMin: Math.max(1, xMin / 1.35),
+    yMin: Math.max(0.01, yMin / 1.5),
+    xMax: xMax * 1.25,
+    yMax: yMax * 1.25,
   };
+}
+
+function logRange(min, max) {
+  return [Math.log10(min), Math.log10(max)];
+}
+
+function geoMid(a, b) {
+  return Math.sqrt(Math.max(a, 1e-12) * Math.max(b, 1e-12));
 }
 
 function hoverHtml(row) {
@@ -476,15 +497,15 @@ function paintCoverage() {
 
   plotSpace.bound2d = false;
   box.innerHTML = `
-    <p class="note">Lecture en valeurs absolues. Taille des points = nombre de RT (échelle √). Couleur = type d'influence ou croisement nommé. Médianes figées sur les ${REF.n.toLocaleString("fr-FR")} URL du tableau.</p>
+    <p class="note">Lecture en valeurs absolues, axes logarithmiques. Taille des points = nombre de RT (échelle √). Couleur = type d'influence ou croisement nommé. Médianes figées sur les ${REF.n.toLocaleString("fr-FR")} URL du tableau.</p>
     <div class="row" style="margin:6px 0 10px">
       <button type="button" id="colorInfl" class="${plotSpace.colorMode === "influence" ? "on" : ""}">Couleur = influence</button>
       <button type="button" id="colorNamed" class="${plotSpace.colorMode === "named" ? "on" : ""}">Couleur = croisement</button>
     </div>
 
-    <h3>1 · Plan 2D — adoptants × demi-vie</h3>
-    <p class="note">${esc(quadNote)} Molette pour zoomer, clic pour ouvrir une URL.</p>
-    <div class="space2d"><div id="space2dAbs"></div><div class="hud"><span>méd. adoptants ${fmt("num", REF.ad.med)} · méd. t½ ${fmt("num", REF.hl.med)} j · taille = RT</span></div></div>
+    <h3>1 · Plan 2D — adoptants × demi-vie (log–log)</h3>
+    <p class="note">${esc(quadNote)} Échelles log. Molette pour zoomer, clic pour ouvrir une URL.</p>
+    <div class="space2d"><div id="space2dAbs"></div><div class="hud"><span>log · méd. adoptants ${fmt("num", REF.ad.med)} · méd. t½ ${fmt("num", REF.hl.med)} j · taille = RT</span></div></div>
 
     <h3>2 · Niveaux exhaustifs</h3>
     <div class="level-grid">${levelBlocks}</div>
@@ -560,8 +581,10 @@ function drawSpace2dAbs(rows) {
     if (root) root.innerHTML = '<p class="note">Plotly n\'est pas chargé (fichier plotly.min.js manquant).</p>';
     return;
   }
-  const { xMax, yMax } = absExtents(rows);
+  const { xMin, yMin, xMax, yMax, xFloor, yFloor } = absExtents(rows);
   const maxRt = Math.max(1, ...rows.map((row) => row.rt_n || 0));
+  const medX = Math.max(xFloor, REF.ad.med || xFloor);
+  const medY = Math.max(yFloor, REF.hl.med || yFloor);
   const traces = [];
   groupedRows(rows).forEach((items, key) => {
     const meta = groupMeta(key);
@@ -570,8 +593,8 @@ function drawSpace2dAbs(rows) {
       type: "scatter",
       mode: "markers",
       name: meta.label,
-      x: items.map(({ row }) => row.adopters || 0),
-      y: items.map(({ row }) => row.half_life || 0),
+      x: items.map(({ row }) => logPos(row.adopters, xFloor)),
+      y: items.map(({ row }) => logPos(row.half_life, yFloor)),
       text: items.map(({ row }) => hoverHtml(row)),
       customdata: items.map(({ row }) => row.url),
       hovertemplate: "%{text}<extra></extra>",
@@ -584,33 +607,46 @@ function drawSpace2dAbs(rows) {
       },
     });
   });
+  const looksLog = (range) => (
+    Array.isArray(range)
+    && range.length === 2
+    && Number.isFinite(range[0])
+    && Number.isFinite(range[1])
+    && range[1] > range[0]
+    && range[0] >= -4
+    && range[1] <= 5
+  );
+  const xRange = looksLog(plotSpace.xRange2d) ? plotSpace.xRange2d : logRange(xMin, xMax);
+  const yRange = looksLog(plotSpace.yRange2d) ? plotSpace.yRange2d : logRange(yMin, yMax);
   const layout = {
-    margin: { l: 54, r: 18, t: 36, b: 48 },
+    margin: { l: 58, r: 18, t: 36, b: 52 },
     paper_bgcolor: "#fbf8f2",
     plot_bgcolor: "#f7f2ea",
     xaxis: {
-      range: plotSpace.xRange2d || [0, xMax],
+      type: "log",
+      range: xRange,
       gridcolor: "#e5d9cb",
       zeroline: false,
       automargin: true,
-      title: { text: "Adoptants (n)", font: { size: 12, color: "#3e6d78" } },
+      title: { text: "Adoptants (n, log)", font: { size: 12, color: "#3e6d78" } },
     },
     yaxis: {
-      range: plotSpace.yRange2d || [0, yMax],
+      type: "log",
+      range: yRange,
       gridcolor: "#e5d9cb",
       zeroline: false,
       automargin: true,
-      title: { text: "Demi-vie (jours)", font: { size: 12, color: "#7d5e78" } },
+      title: { text: "Demi-vie (jours, log)", font: { size: 12, color: "#7d5e78" } },
     },
     shapes: [
-      { type: "line", x0: REF.ad.med, x1: REF.ad.med, y0: 0, y1: yMax, line: { color: "#3e6d78", width: 1.4, dash: "dot" } },
-      { type: "line", x0: 0, x1: xMax, y0: REF.hl.med, y1: REF.hl.med, line: { color: "#7d5e78", width: 1.4, dash: "dot" } },
+      { type: "line", x0: medX, x1: medX, y0: yMin, y1: yMax, line: { color: "#3e6d78", width: 1.4, dash: "dot" } },
+      { type: "line", x0: xMin, x1: xMax, y0: medY, y1: medY, line: { color: "#7d5e78", width: 1.4, dash: "dot" } },
     ],
     annotations: [
-      { x: REF.ad.med * 0.45, y: REF.hl.med * 0.45, text: "bref · restreint", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
-      { x: REF.ad.med + (xMax - REF.ad.med) * 0.55, y: REF.hl.med * 0.45, text: "bref · large", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
-      { x: REF.ad.med * 0.45, y: REF.hl.med + (yMax - REF.hl.med) * 0.55, text: "durable · restreint", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
-      { x: REF.ad.med + (xMax - REF.ad.med) * 0.55, y: REF.hl.med + (yMax - REF.hl.med) * 0.55, text: "durable · large", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
+      { x: geoMid(xMin, medX), y: geoMid(yMin, medY), text: "bref · restreint", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
+      { x: geoMid(medX, xMax), y: geoMid(yMin, medY), text: "bref · large", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
+      { x: geoMid(xMin, medX), y: geoMid(medY, yMax), text: "durable · restreint", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
+      { x: geoMid(medX, xMax), y: geoMid(medY, yMax), text: "durable · large", showarrow: false, font: { size: 11, color: "#8a7d70" }, opacity: 0.85 },
     ],
     legend: {
       orientation: "h",
